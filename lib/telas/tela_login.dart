@@ -37,7 +37,10 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
     // listener duplicado escutando `provedorAutenticacao` (o que causaria
     // múltiplas navegações/logins para uma única mudança de estado).
     _assinaturaAuth?.close();
-    _assinaturaAuth = ref.listenManual(provedorAutenticacao, (anterior, proximo) {
+    _assinaturaAuth = ref.listenManual(provedorAutenticacao, (
+      anterior,
+      proximo,
+    ) {
       // Um único login gera mais de uma notificação (a sessão e a conta
       // conectada chegam por streams distintos), e `TelaLogin` continua
       // montada durante a animação do `pushReplacement` — sem este guard a
@@ -54,9 +57,9 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
         );
       }
       if (proximo.mensagemErro != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(proximo.mensagemErro!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(proximo.mensagemErro!)));
       }
     });
   }
@@ -66,7 +69,8 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
     if (!auth.termosAceitos) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Aceite os Termos de Uso e LGPD para continuar.')),
+          content: Text('Aceite os Termos de Uso e LGPD para continuar.'),
+        ),
       );
       return;
     }
@@ -99,26 +103,36 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
                       color: Colors.white.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.3)),
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
                     ),
-                    child: const Icon(Icons.favorite_rounded,
-                        color: Colors.white, size: 38),
+                    child: const Icon(
+                      Icons.favorite_rounded,
+                      color: Colors.white,
+                      size: 38,
+                    ),
                   ),
                   const SizedBox(height: 22),
-                  const Text('Fisio Home Care',
-                      style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: -0.6)),
+                  const Text(
+                    'Fisio Home Care',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: -0.6,
+                    ),
+                  ),
                   const SizedBox(height: 6),
-                  Text('Gestão de atendimentos\ndomiciliares de fisioterapia',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 14,
-                          height: 1.5,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white.withValues(alpha: 0.82))),
+                  Text(
+                    'Gestão de atendimentos\ndomiciliares de fisioterapia',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.5,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withValues(alpha: 0.82),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -161,14 +175,18 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
                                       : Colors.white,
                                   borderRadius: BorderRadius.circular(7),
                                   border: Border.all(
-                                      color: termosAceitos
-                                          ? FisioCores.primary
-                                          : const Color(0xFFCBD5E1),
-                                      width: 2),
+                                    color: termosAceitos
+                                        ? FisioCores.primary
+                                        : const Color(0xFFCBD5E1),
+                                    width: 2,
+                                  ),
                                 ),
                                 child: termosAceitos
-                                    ? const Icon(Icons.check_rounded,
-                                        size: 14, color: Colors.white)
+                                    ? const Icon(
+                                        Icons.check_rounded,
+                                        size: 14,
+                                        color: Colors.white,
+                                      )
                                     : null,
                               ),
                             ),
@@ -177,26 +195,32 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
                               child: Text.rich(
                                 TextSpan(
                                   style: TextStyle(
-                                      fontSize: 12,
-                                      height: 1.5,
-                                      fontWeight: FontWeight.w500,
-                                      color: FisioCores.textSecondary),
+                                    fontSize: 12,
+                                    height: 1.5,
+                                    fontWeight: FontWeight.w500,
+                                    color: FisioCores.textSecondary,
+                                  ),
                                   children: [
                                     TextSpan(text: 'Li e concordo com a '),
                                     TextSpan(
-                                        text: 'Política de Privacidade',
-                                        style: TextStyle(
-                                            color: FisioCores.primary,
-                                            fontWeight: FontWeight.w700)),
+                                      text: 'Política de Privacidade',
+                                      style: TextStyle(
+                                        color: FisioCores.primary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                                     TextSpan(text: ' e os '),
                                     TextSpan(
-                                        text: 'Termos de Uso',
-                                        style: TextStyle(
-                                            color: FisioCores.primary,
-                                            fontWeight: FontWeight.w700)),
+                                      text: 'Termos de Uso',
+                                      style: TextStyle(
+                                        color: FisioCores.primary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
                                     TextSpan(
-                                        text:
-                                            ', e autorizo o tratamento dos meus dados conforme a LGPD.'),
+                                      text:
+                                          ', e autorizo o tratamento dos meus dados conforme a LGPD.',
+                                    ),
                                   ],
                                 ),
                               ),
@@ -206,24 +230,31 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
                         const SizedBox(height: 16),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 10),
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF1F4F8),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Row(
                             children: [
-                              Icon(Icons.lock_outline_rounded,
-                                  size: 15, color: FisioCores.textMuted),
+                              Icon(
+                                Icons.lock_outline_rounded,
+                                size: 15,
+                                color: FisioCores.textMuted,
+                              ),
                               SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                    'Seus dados ficam na sua própria planilha Google. Nada é armazenado em nossos servidores.',
-                                    style: TextStyle(
-                                        fontSize: 11,
-                                        height: 1.4,
-                                        fontWeight: FontWeight.w500,
-                                        color: FisioCores.textMuted)),
+                                  'Seus dados ficam na sua própria planilha Google. Nada é armazenado em nossos servidores.',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    height: 1.4,
+                                    fontWeight: FontWeight.w500,
+                                    color: FisioCores.textMuted,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -266,71 +297,91 @@ class _BotaoEntrarGoogle extends StatelessWidget {
     required this.onTap,
   });
 
+  /// O GIS renderiza o botão com no máximo 400px e o centraliza no espaço
+  /// disponível. Limitar o desenho à mesma largura mantém a área clicável e a
+  /// área visível iguais — sem isso, numa janela larga as extremidades do botão
+  /// desenhado ficam sobre o container vazio do GIS e não respondem ao clique.
+  static const _larguraMaxima = 400.0;
+
   @override
   Widget build(BuildContext context) {
     final habilitado = !carregando && termosAceitos;
     final largura = MediaQuery.of(context).size.width - 44;
+    final larguraBotao = largura < _larguraMaxima ? largura : _larguraMaxima;
 
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        GestureDetector(
-          key: const Key('btn_entrar_google'),
-          onTap: habilitado ? onTap : null,
-          child: Opacity(
-            opacity: termosAceitos ? 1 : 0.55,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 15),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-                boxShadow: [
-                  BoxShadow(
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: _larguraMaxima),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          GestureDetector(
+            key: const Key('btn_entrar_google'),
+            onTap: habilitado ? onTap : null,
+            child: Opacity(
+              opacity: termosAceitos ? 1 : 0.55,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: [
+                    BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 16,
-                      offset: const Offset(0, 8)),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (carregando)
-                    const SizedBox(
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (carregando)
+                      const SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2.4, color: FisioCores.primary))
-                  else
-                    const _GoogleG(),
-                  const SizedBox(width: 11),
-                  const Text('Continuar com Google',
+                          strokeWidth: 2.4,
+                          color: FisioCores.primary,
+                        ),
+                      )
+                    else
+                      const _GoogleG(),
+                    const SizedBox(width: 11),
+                    const Text(
+                      'Continuar com Google',
                       style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: FisioCores.textPrimary)),
-                ],
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: FisioCores.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        // Só recebe o toque quando o login está liberado; enquanto os termos
-        // não forem aceitos, `IgnorePointer` deixa o clique chegar ao
-        // `GestureDetector` abaixo, que exibe a mensagem de erro.
-        Positioned.fill(
-          child: IgnorePointer(
-            ignoring: !habilitado,
-            child: Opacity(
-              opacity: 0,
-              child: OverflowBox(
-                maxWidth: largura,
-                child: construirBotaoGoogleRenderizado(larguraMinima: largura),
+          // O botão do Google só é construído quando o login está liberado.
+          // `IgnorePointer` NÃO serve aqui: ele só afeta o hit-test do Flutter, e
+          // a platform view é um elemento DOM que recebe o clique direto — com
+          // ele, dava para entrar sem aceitar os termos de uso.
+          if (habilitado)
+            Positioned.fill(
+              // NÃO usar opacity 0: `RenderOpacity.paint` retorna sem pintar o
+              // filho quando o alpha é zero (`proxy_box.dart`), e uma platform
+              // view só é anexada ao DOM quando pintada — o botão do Google
+              // simplesmente não existiria na página e o clique cairia no vazio.
+              // 0.01 vira alpha 3/255: imperceptível, mas pintado de verdade.
+              child: Opacity(
+                opacity: 0.01,
+                child: construirBotaoGoogleRenderizado(
+                  larguraMinima: larguraBotao,
+                ),
               ),
             ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -344,11 +395,14 @@ class _GoogleG extends StatelessWidget {
       height: 20,
       alignment: Alignment.center,
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(4)),
-      child: const Text('G',
-          style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF4285F4))),
+      child: const Text(
+        'G',
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF4285F4),
+        ),
+      ),
     );
   }
 }
