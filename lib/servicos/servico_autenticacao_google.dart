@@ -72,7 +72,8 @@ class ServicoAutenticacaoGoogleReal implements ServicoAutenticacaoGoogle {
   Stream<SessaoGoogle> get sessoesConectadas => _sessoesController.stream;
 
   @override
-  bool get suportaLoginProgramatico => GoogleSignIn.instance.supportsAuthenticate();
+  bool get suportaLoginProgramatico =>
+      GoogleSignIn.instance.supportsAuthenticate();
 
   @override
   Future<void> inicializar() {
@@ -142,12 +143,32 @@ class ServicoAutenticacaoGoogleReal implements ServicoAutenticacaoGoogle {
     _sessoesController.add(_criarSessao(conta));
   }
 
+  /// Cliente usado para pedir os tokens de autorização.
+  ///
+  /// No web usamos o cliente **sem** vínculo com a conta de propósito: quando
+  /// recebe um hint de usuário, `google_sign_in_web` monta o token client com
+  /// `prompt: 'select_account'` (ver `src/gis_client.dart`), o que reabre a tela
+  /// de escolha de conta logo depois de o usuário já ter escolhido a conta no
+  /// botão do Google — duas seleções para um único login. Sem o hint, o
+  /// `prompt` fica vazio e o Google reaproveita a sessão ativa, só mostrando o
+  /// seletor quando existe ambiguidade real entre contas conectadas.
+  ///
+  /// Fora do web mantemos o cliente da conta, que é a forma recomendada e já
+  /// funciona bem no fluxo nativo.
+  GoogleSignInAuthorizationClient _clienteAutorizacao(
+    GoogleSignInAccount conta,
+  ) {
+    return kIsWeb
+        ? GoogleSignIn.instance.authorizationClient
+        : conta.authorizationClient;
+  }
+
   /// Garante que os escopos estejam autorizados antes de considerar a sessão
   /// válida. Autenticação (quem é o usuário) e autorização (acesso ao
   /// Drive/Sheets) são etapas separadas na API 7.x — foi exatamente essa
   /// distinção que faltava na 6.x e deixava a sessão sem access token.
   Future<void> _garantirAutorizacao(GoogleSignInAccount conta) async {
-    final cliente = conta.authorizationClient;
+    final cliente = _clienteAutorizacao(conta);
     final existente = await cliente.authorizationForScopes(escoposGoogleFisio);
     if (existente != null) return;
     await cliente.authorizeScopes(escoposGoogleFisio);
@@ -158,9 +179,9 @@ class ServicoAutenticacaoGoogleReal implements ServicoAutenticacaoGoogle {
     // renovado sozinho, então pedir os headers na hora do uso permite que
     // `authorizationHeaders` devolva um token novo quando o antigo vencer.
     Future<Map<String, String>> obterHeaders() async {
-      final headers = await conta.authorizationClient.authorizationHeaders(
-        escoposGoogleFisio,
-      );
+      final headers = await _clienteAutorizacao(
+        conta,
+      ).authorizationHeaders(escoposGoogleFisio);
       if (headers == null) {
         throw StateError('Não foi possível obter autorização do Google.');
       }
@@ -178,15 +199,16 @@ class ServicoAutenticacaoGoogleReal implements ServicoAutenticacaoGoogle {
   Future<SessaoGoogle?> tentarRestaurarSessao() async {
     await inicializar();
 
-    final conta = await GoogleSignIn.instance.attemptLightweightAuthentication();
+    final conta = await GoogleSignIn.instance
+        .attemptLightweightAuthentication();
     if (conta == null) return null;
 
     // A restauração leve devolve identidade; a autorização pode ter expirado.
     // Validar aqui evita entregar uma sessão que falharia na primeira chamada
     // à API.
-    final headers = await conta.authorizationClient.authorizationForScopes(
-      escoposGoogleFisio,
-    );
+    final headers = await _clienteAutorizacao(
+      conta,
+    ).authorizationForScopes(escoposGoogleFisio);
     if (headers == null) return null;
 
     return _criarSessao(conta);
