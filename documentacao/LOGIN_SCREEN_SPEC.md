@@ -5,11 +5,21 @@ Esta tela é a porta de entrada do aplicativo, responsável pela autenticação 
 ## 1. Requisitos Funcionais
 * **Autenticação:** Integração obrigatória com Google Sign-In[cite: 2, 3].
     * Na Web, o login deve usar o botão oficial do Google renderizado pelo SDK.
+      **Como está implementado:** o botão do SDK é de fato quem dispara o login,
+      mas fica sobreposto (praticamente transparente) ao botão desenhado pelo
+      design system, para preservar a identidade visual da tela. É o SDK que
+      recebe o clique — o desenho por baixo é apenas aparência.
     * Após selecionar a conta Google, a autorização de acesso ao Drive/Sheets ocorre em uma segunda ação explícita do usuário para evitar bloqueio de popup pelo navegador.
+      Quando a conta já concedeu os escopos, essa etapa não pede nova escolha de
+      conta — o App solicita a autorização sem enviar hint de usuário, o que faz
+      o Google reaproveitar a sessão ativa.
 * **LGPD e Consentimento:**
     * O sistema deve apresentar o "Termo de Consentimento para Tratamento de Dados Pessoais e de Saúde".
     * **Regra de Negócio:** O acesso à funcionalidade de login deve ser condicionado ao aceite explícito do termo através de um campo de verificação (checkbox).
     * O botão de "Entrar com Google" deve permanecer desabilitado até que o aceite seja formalizado pelo usuário.
+      **Na Web isso exige não construir o botão do SDK** enquanto o termo não for
+      aceito: ele é um elemento DOM e receberia o clique mesmo "desabilitado" pelo
+      Flutter, permitindo entrar sem o aceite.
 * **Persistência de Sessão:** O aplicativo deve realizar a verificação automática de token de sessão ao inicializar[cite: 2].
 * **Estado de Processamento:** O sistema deve sinalizar o status de carregamento (`loading`) durante a tentativa de autenticação[cite: 2].
 * **Tratamento de Exceções:** Exibição de mensagens de erro amigáveis caso ocorram falhas na autenticação[cite: 2].

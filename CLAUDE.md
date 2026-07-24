@@ -368,6 +368,31 @@ flutter run
 | `BackdropFilter` reimplementado inline em telas | Resolvido (o redesign removeu todos os usos) | ✅ |
 | Lógica de popup duplicada em dashboard/sessoes | Resolvido (centralizado em `acoes_agendamento.dart`) | ✅ |
 | Todas as telas principais possuem testes de widget | — | ✅ |
+| Botão de login do web é o do Google (platform view) sobreposto ao desenho | Trade-off aceito para preservar o visual — ver regras abaixo | 🟡 |
+
+### ⚠️ Login no web — regras que não podem ser quebradas
+
+No web o Google Identity Services **não permite login iniciado pela aplicação**
+(`GoogleSignIn.authenticate()` lança `UnsupportedError`). A `TelaLogin` sobrepõe
+o botão do SDK, quase transparente, ao botão desenhado. Nada disso aparece nos
+testes: fora do web `construirBotaoGoogleRenderizado` vira `SizedBox.shrink()`.
+
+- **`Opacity` tem que ser > 0.** Com alpha 0 o Flutter não pinta o filho
+  (`RenderOpacity.paint`), e uma platform view só entra no DOM quando pintada —
+  o botão deixa de existir e o clique cai no vazio.
+- **`IgnorePointer` não segura clique de platform view.** Ele só afeta o
+  hit-test do Flutter; o elemento DOM recebe o evento direto. Para bloquear de
+  verdade (ex.: enquanto os termos não são aceitos), **não construir o widget**.
+- **O GIS limita o botão a 400px** e centraliza. O desenho por baixo tem que
+  respeitar a mesma largura, senão as extremidades não respondem ao clique.
+- **Não passar hint de usuário na autorização no web.** `conta.authorizationClient`
+  envia a conta como hint, e o plugin traduz isso em `prompt: 'select_account'`,
+  reabrindo o seletor de contas. Usar `GoogleSignIn.instance.authorizationClient`.
+
+Como diagnosticar: rodar o app e inspecionar o DOM — `flt-platform-view` para
+saber se o botão existe, e `elementFromPoint(...).closest('[role="button"]')` nas
+bordas e no centro para saber se ele recebe o clique. Screenshot não revela nada
+disso.
 
 ---
 
@@ -475,6 +500,6 @@ Para questões sobre estrutura, padrões ou decisões técnicas, **SEMPRE consul
 
 ---
 
-**Última atualização:** 2026-07-01  
-**Versão:** 1.0.16  
-**Branches:** master, develop
+**Última atualização:** 2026-07-23  
+**Versão:** 1.0.18 (produção)  
+**Branches:** master, develop, migracao-google-sign-in-7

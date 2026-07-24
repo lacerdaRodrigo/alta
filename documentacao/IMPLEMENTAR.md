@@ -21,19 +21,21 @@ não invalida a credencial.
 - [ ] Decidir se vale reescrever o histórico (`git filter-repo`) ou apenas
       rotacionar e seguir
 
-### 2. Validar a migração do `google_sign_in` 7.2.0 (código pronto, falta testar)
+### 2. Cenários de login ainda não exercitados
 
-Migração implementada na branch `migracao-google-sign-in-7`. Falta **validação
-manual** — nenhum teste automatizado cobre o SDK real do Google.
+A migração para `google_sign_in` 7.2.0 (branch `migracao-google-sign-in-7`) foi
+validada manualmente em **2026-07-23**: login funcionando no web e no Android,
+com uma única escolha de conta. Nenhum teste automatizado cobre o SDK real do
+Google, então dois cenários seguem sem verificação:
 
-- [ ] Login no web (preview channel): entrar, criar/abrir planilha, carregar dados
-- [ ] Login no Android em device físico — a 7.x usa Credential Manager no nativo
-- [ ] Sessão com mais de 1h: no web o access token expira em 3600s e **não é
+- [ ] **Sessão com mais de 1h.** No web o access token expira em 3600s e **não é
       renovado** pelo plugin. `obterHeaders()` chama `authorizationHeaders()` a
-      cada requisição justamente para renovar; confirmar que funciona na prática
-- [ ] Primeiro login com **conta Google sem consentimento prévio** (o escopo
-      `spreadsheets` foi restaurado nesta migração, mas contas antigas mascaram
-      o problema por já terem o consentimento)
+      cada requisição justamente para renovar; falta confirmar que funciona na
+      prática, deixando o app aberto além desse tempo.
+- [ ] **Primeiro login com conta Google sem consentimento prévio.** O escopo
+      `spreadsheets` foi restaurado nesta migração, mas contas que já usaram o
+      app carregam o consentimento de antes e mascaram o problema. Testar com
+      conta limpa: deve criar a planilha e carregar os dados.
 
 > ⚠️ A `TelaLogin` sobrepõe o botão do GIS (quase invisível) ao botão desenhado
 > do app, porque no web `authenticate()` lança `UnsupportedError`. A sobreposição
