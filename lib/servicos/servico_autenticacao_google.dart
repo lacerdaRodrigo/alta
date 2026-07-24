@@ -109,13 +109,17 @@ class ServicoAutenticacaoGoogleReal implements ServicoAutenticacaoGoogle {
     }
 
     final sessao = _criarSessao(conta);
-    _sessoesController.add(sessao);
+    // A conta vai primeiro de propósito: cada emissão vira uma mudança de
+    // estado em `AutenticacaoNotificador`, e só a sessão liga
+    // `estaAutenticado`. Publicando a conta antes, a virada para autenticado é
+    // a última notificação do login — nenhum ouvinte reage duas vezes a ela.
     _contasController.add(
       ContaGoogleConectada(
         nomeUsuario: conta.displayName ?? conta.email,
         email: conta.email,
       ),
     );
+    _sessoesController.add(sessao);
     return sessao;
   }
 

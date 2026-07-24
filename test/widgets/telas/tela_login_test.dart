@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fisio_home_care/telas/tela_dashboard.dart';
 import 'package:fisio_home_care/telas/tela_login.dart';
 import 'package:fisio_home_care/provedores/provedor_autenticacao.dart';
 import 'package:fisio_home_care/servicos/servico_autenticacao_google.dart';
@@ -15,6 +16,7 @@ class ServicoAutenticacaoGoogleControlavel
     implements ServicoAutenticacaoGoogle {
   final _entrar = Completer<SessaoGoogle>();
   bool entrarFoiChamado = false;
+  int vezesChamado = 0;
 
   @override
   Stream<ContaGoogleConectada> get contasConectadas => const Stream.empty();
@@ -31,6 +33,7 @@ class ServicoAutenticacaoGoogleControlavel
   @override
   Future<SessaoGoogle> entrar() {
     entrarFoiChamado = true;
+    vezesChamado++;
     return _entrar.future;
   }
 
@@ -38,12 +41,83 @@ class ServicoAutenticacaoGoogleControlavel
   Future<void> sair() async {}
 }
 
-Widget criarAppTeste(ServicoAutenticacaoGoogle servico) {
+/// Fake que reproduz fielmente o [ServicoAutenticacaoGoogleReal]: um único
+/// login publica **duas** vezes — em `contasConectadas` e em
+/// `sessoesConectadas` —, gerando duas mudanças de estado com
+/// `estaAutenticado == true` para `TelaLogin` reagir.
+class ServicoAutenticacaoGoogleDuplaEmissao
+    implements ServicoAutenticacaoGoogle {
+  final _contas = StreamController<ContaGoogleConectada>.broadcast();
+  final _sessoes = StreamController<SessaoGoogle>.broadcast();
+
+  @override
+  Stream<ContaGoogleConectada> get contasConectadas => _contas.stream;
+
+  @override
+  Stream<SessaoGoogle> get sessoesConectadas => _sessoes.stream;
+
+  @override
+  Future<void> inicializar() async {}
+
+  @override
+  Future<SessaoGoogle?> tentarRestaurarSessao() async => null;
+
+  @override
+  Future<SessaoGoogle> entrar() async {
+    final sessao = SessaoGoogle(
+      nomeUsuario: 'Dr. Teste',
+      email: 'teste@example.com',
+      // Falha rápido: evita que o carregamento do dashboard tente rede real.
+      obterHeaders: () async => throw StateError('sem rede no teste'),
+    );
+    // Ordem deliberadamente invertida em relação ao serviço real: a sessão
+    // (que liga `estaAutenticado`) vem primeiro, então a segunda emissão
+    // também chega com `estaAutenticado == true`. É o pior caso, e garante que
+    // `TelaLogin` seja imune a ele por conta própria.
+    _sessoes.add(sessao);
+    _contas.add(
+      const ContaGoogleConectada(
+        nomeUsuario: 'Dr. Teste',
+        email: 'teste@example.com',
+      ),
+    );
+    return sessao;
+  }
+
+  @override
+  Future<void> sair() async {}
+
+  void descartar() {
+    _contas.close();
+    _sessoes.close();
+  }
+}
+
+/// Conta as substituições de rota. `pushReplacement` troca a rota no lugar,
+/// então contar `TelaDashboard` na árvore não distingue uma navegação de duas —
+/// só o observador revela a navegação duplicada.
+class ContadorDeNavegacoes extends NavigatorObserver {
+  int substituicoes = 0;
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    substituicoes++;
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+  }
+}
+
+Widget criarAppTeste(
+  ServicoAutenticacaoGoogle servico, {
+  NavigatorObserver? observador,
+}) {
   return ProviderScope(
     overrides: [
       provedorServicoAutenticacaoGoogle.overrideWithValue(servico),
     ],
-    child: const MaterialApp(home: TelaLogin()),
+    child: MaterialApp(
+      home: const TelaLogin(),
+      navigatorObservers: observador == null ? const [] : [observador],
+    ),
   );
 }
 
@@ -147,6 +221,54 @@ void main() {
 
         expect(servico.entrarFoiChamado, isTrue);
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'tocar de novo enquanto carrega não chama o serviço uma segunda vez',
+      (tester) async {
+        final servico = ServicoAutenticacaoGoogleControlavel();
+        await tester.pumpWidget(criarAppTeste(servico));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const Key('checkbox_termos')));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const Key('btn_entrar_google')));
+        await tester.pump();
+        // Segundo toque enquanto o primeiro login ainda está em andamento.
+        await tester.tap(find.byKey(const Key('btn_entrar_google')));
+        await tester.pump();
+
+        expect(servico.vezesChamado, 1);
+      },
+    );
+
+    testWidgets(
+      'login que emite conta e sessão navega para o Dashboard uma única vez',
+      (tester) async {
+        final servico = ServicoAutenticacaoGoogleDuplaEmissao();
+        addTearDown(servico.descartar);
+        final navegacoes = ContadorDeNavegacoes();
+
+        await tester.pumpWidget(
+          criarAppTeste(servico, observador: navegacoes),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const Key('checkbox_termos')));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const Key('btn_entrar_google')));
+        await tester.pumpAndSettle();
+
+        // Duas notificações com `estaAutenticado == true`, mas apenas um
+        // `pushReplacement`: um segundo empurraria uma `TelaDashboard` por cima
+        // da primeira, desmontando-a com o carregamento de dados em andamento
+        // ("Bad state: Using 'ref' ... unmounted").
+        expect(navegacoes.substituicoes, 1);
+        expect(find.byType(TelaDashboard), findsOneWidget);
+        expect(find.byType(TelaLogin), findsNothing);
       },
     );
   });

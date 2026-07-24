@@ -13,6 +13,8 @@ class TelaLogin extends ConsumerStatefulWidget {
 
 class _TelaLoginState extends ConsumerState<TelaLogin> {
   bool _carregando = false;
+  bool _navegou = false;
+  ProviderSubscription<EstadoAutenticacao>? _assinaturaAuth;
 
   @override
   void initState() {
@@ -22,9 +24,26 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
     });
   }
 
+  @override
+  void dispose() {
+    _assinaturaAuth?.close();
+    super.dispose();
+  }
+
   void _ouvirEstadoAutenticacao() {
-    ref.listenManual(provedorAutenticacao, (anterior, proximo) {
-      if (proximo.estaAutenticado && mounted) {
+    // `initState` roda via addPostFrameCallback só uma vez por State, mas
+    // guardamos e fechamos a assinatura em dispose() para nunca deixar um
+    // listener duplicado escutando `provedorAutenticacao` (o que causaria
+    // múltiplas navegações/logins para uma única mudança de estado).
+    _assinaturaAuth?.close();
+    _assinaturaAuth = ref.listenManual(provedorAutenticacao, (anterior, proximo) {
+      // Um único login gera mais de uma notificação (a sessão e a conta
+      // conectada chegam por streams distintos), e `TelaLogin` continua
+      // montada durante a animação do `pushReplacement` — sem este guard a
+      // segunda notificação empurra uma segunda `TelaDashboard` por cima da
+      // primeira, desmontando-a com o carregamento de dados em andamento.
+      if (!_navegou && proximo.estaAutenticado && mounted) {
+        _navegou = true;
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => TelaDashboard(
@@ -119,7 +138,9 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
                       children: [
                         GestureDetector(
                           key: const Key('btn_entrar_google'),
-                          onTap: _entrar,
+                          onTap: (_carregando || !termosAceitos)
+                              ? null
+                              : _entrar,
                           child: Opacity(
                             opacity: termosAceitos ? 1 : 0.55,
                             child: Container(

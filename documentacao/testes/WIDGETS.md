@@ -1,4 +1,4 @@
-# 🎨 Testes de Widget (158 testes)
+# 🎨 Testes de Widget (160 testes)
 
 Testes de componentes visuais: telas, componentes reutilizáveis e utilitários
 de UI, interação do usuário e estados visuais.
@@ -76,7 +76,7 @@ valor e observações.
 
 ---
 
-### tela_login_test.dart (6 testes)
+### tela_login_test.dart (8 testes)
 
 **Tela:** Login com Google — checkbox LGPD, links legais, botão de entrada.
 
@@ -87,10 +87,19 @@ valor e observações.
 ✓ Tocar no checkbox marca os termos como aceitos
 ✓ Entrar sem aceitar os termos exibe erro e não chama o serviço
 ✓ Aceitar termos e entrar chama o serviço e exibe indicador de carregamento
+✓ Tocar de novo enquanto carrega não chama o serviço uma segunda vez
+✓ Login que emite conta e sessão navega para o Dashboard uma única vez
 ```
 
 > Usa `ServicoAutenticacaoGoogleControlavel` (fake com `Completer`) para
 > inspecionar o estado de carregamento sem disparar a navegação ao dashboard.
+>
+> `ServicoAutenticacaoGoogleDuplaEmissao` reproduz o pior caso do serviço real:
+> um único login publica em `sessoesConectadas` **e** em `contasConectadas`,
+> gerando duas mudanças de estado com `estaAutenticado == true`. Como
+> `pushReplacement` troca a rota no lugar, contar `TelaDashboard` na árvore não
+> distingue uma navegação de duas — o teste usa um `NavigatorObserver`
+> (`ContadorDeNavegacoes`) e exige exatamente **uma** substituição de rota.
 
 ---
 
@@ -480,4 +489,4 @@ flutter test test/widgets/telas/tela_pacientes_test.dart
 | Modal Detalhes Paciente | ✅ | 12 | — |
 | Rodapé Versão | ✅ | 3 | Overlay de versão |
 | Ações de Agendamento | ✅ | 6 | — |
-| **Total** | **✅** | **158** | Telas principais + componentes/utilitários |
+| **Total** | **✅** | **160** | Telas principais + componentes/utilitários |

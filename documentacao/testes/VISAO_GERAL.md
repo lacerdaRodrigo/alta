@@ -1,6 +1,6 @@
 # 📋 Testes Automatizados — Visão Geral
 
-**Status:** ✅ 274 testes passando
+**Status:** ✅ 276 testes passando
 
 ---
 
@@ -15,7 +15,7 @@ O projeto utiliza **apenas testes unitários e de widget** (sem E2E automatizado
 | **Unit — Serviços** | 5 | 2% | Preferências (SharedPreferences) |
 | **Widget — Telas** | 137 | 50% | UI, interação, estados visuais |
 | **Widget — Componentes/Utilitários** | 21 | 8% | Modal de detalhes, rodapé versão, ações de agendamento |
-| **TOTAL** | **274** | **100%** | — |
+| **TOTAL** | **276** | **100%** | — |
 
 ---
 
@@ -37,7 +37,7 @@ test/
 │       ├── validador_cpf_test.dart      (9 testes)
 │       ├── validadores_test.dart        (46 testes)
 │       └── gerador_id_test.dart         (8 testes)
-└── widgets/                (158 testes — UI + componentes)
+└── widgets/                (160 testes — UI + componentes)
     ├── componentes/
     │   ├── modal_detalhes_paciente_test.dart   (12 testes)
     │   └── rodape_versao_test.dart             (3 testes)
@@ -63,7 +63,7 @@ test/
 ## Como Rodar
 
 ```bash
-# Todos os 274 testes
+# Todos os 276 testes
 flutter test
 
 # Apenas unitários

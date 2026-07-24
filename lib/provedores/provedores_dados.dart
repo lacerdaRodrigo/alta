@@ -155,49 +155,100 @@ void limparDados(WidgetRef ref) {
   ref.read(provedorPlanilhaId.notifier).definir(null);
 }
 
+/// Referências resolvidas uma única vez, antes de qualquer `await`.
+///
+/// O carregamento é disparado do `initState` de uma tela, mas os notifiers
+/// vivem no `ProviderScope` global. Se a tela for desmontada durante a chamada
+/// de rede, usar o `WidgetRef` depois lançaria
+/// "Bad state: Using 'ref' when a widget is about to or has been unmounted is
+/// unsafe" — as referências capturadas aqui continuam válidas.
+class _DependenciasCarregamento {
+  final EstadoAutenticacao auth;
+  final RepositorioDadosGoogle repositorio;
+  final ListaPacientesNotifier listaPacientes;
+  final ListaAgendamentosNotifier listaAgendamentos;
+  final ListaEvolucoesNotifier listaEvolucoes;
+  final ValorSessaoPadraoNotifier valorSessaoPadrao;
+  final LogsAuditoriaNotifier logsAuditoria;
+  final PlanilhaIdNotifier planilhaId;
+  final CarregamentoDadosNotifier carregamento;
+
+  const _DependenciasCarregamento({
+    required this.auth,
+    required this.repositorio,
+    required this.listaPacientes,
+    required this.listaAgendamentos,
+    required this.listaEvolucoes,
+    required this.valorSessaoPadrao,
+    required this.logsAuditoria,
+    required this.planilhaId,
+    required this.carregamento,
+  });
+
+  factory _DependenciasCarregamento.ler(WidgetRef ref) {
+    return _DependenciasCarregamento(
+      auth: ref.read(provedorAutenticacao),
+      repositorio: _repositorio(ref),
+      listaPacientes: ref.read(provedorListaPacientes.notifier),
+      listaAgendamentos: ref.read(provedorListaAgendamentos.notifier),
+      listaEvolucoes: ref.read(provedorListaEvolucoes.notifier),
+      valorSessaoPadrao: ref.read(provedorValorSessaoPadrao.notifier),
+      logsAuditoria: ref.read(provedorLogsAuditoria.notifier),
+      planilhaId: ref.read(provedorPlanilhaId.notifier),
+      carregamento: ref.read(provedorCarregamentoDados.notifier),
+    );
+  }
+}
+
 Future<void> carregarDadosReais(WidgetRef ref) async {
   final carregamento = ref.read(provedorCarregamentoDados.notifier);
   carregamento.carregando();
 
+  final _DependenciasCarregamento deps;
   try {
-    await _executarCarregamento(ref);
+    deps = _DependenciasCarregamento.ler(ref);
+  } catch (erro) {
+    // `_repositorio` lança quando não há sessão autenticada.
+    carregamento.erro(erro);
+    return;
+  }
+
+  try {
+    await _executarCarregamento(deps);
   } catch (erro) {
     if (erro.toString().contains('404')) {
-      _repositorio(ref).limparCache();
+      deps.repositorio.limparCache();
       try {
-        await _executarCarregamento(ref);
+        await _executarCarregamento(deps);
         return;
       } catch (e2) {
-        carregamento.erro(e2);
+        deps.carregamento.erro(e2);
         return;
       }
     }
-    carregamento.erro(erro);
+    deps.carregamento.erro(erro);
   }
 }
 
 const _versaoTermosAceitos = '2026-06-29';
 
-Future<void> _executarCarregamento(WidgetRef ref) async {
-  final auth = ref.read(provedorAutenticacao);
-  if (auth.termosAceitos) {
-    final email = auth.sessao?.email ?? 'desconhecido';
-    await _repositorio(ref).registrarAuditoria(
+Future<void> _executarCarregamento(_DependenciasCarregamento deps) async {
+  if (deps.auth.termosAceitos) {
+    final email = deps.auth.sessao?.email ?? 'desconhecido';
+    await deps.repositorio.registrarAuditoria(
       'ACEITE_TERMOS',
       'Versao=$_versaoTermosAceitos; Email=$email',
     );
   }
 
-  final dados = await _repositorio(ref).carregarTudo();
-  ref.read(provedorListaPacientes.notifier).definir(dados.pacientes);
-  ref.read(provedorListaAgendamentos.notifier).definir(dados.agendamentos);
-  ref.read(provedorListaEvolucoes.notifier).definir(dados.evolucoes);
-  ref
-      .read(provedorValorSessaoPadrao.notifier)
-      .definir(dados.valorSessaoPadrao);
-  ref.read(provedorLogsAuditoria.notifier).definir(dados.logsAuditoria);
-  ref.read(provedorPlanilhaId.notifier).definir(dados.planilhaId);
-  ref.read(provedorCarregamentoDados.notifier).sucesso();
+  final dados = await deps.repositorio.carregarTudo();
+  deps.listaPacientes.definir(dados.pacientes);
+  deps.listaAgendamentos.definir(dados.agendamentos);
+  deps.listaEvolucoes.definir(dados.evolucoes);
+  deps.valorSessaoPadrao.definir(dados.valorSessaoPadrao);
+  deps.logsAuditoria.definir(dados.logsAuditoria);
+  deps.planilhaId.definir(dados.planilhaId);
+  deps.carregamento.sucesso();
 }
 
 Future<void> salvarPacienteReal(WidgetRef ref, Paciente paciente) async {

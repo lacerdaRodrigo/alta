@@ -85,7 +85,10 @@ class AutenticacaoNotificador extends Notifier<EstadoAutenticacao> {
   }
 
   void _autenticarComSessao(SessaoGoogle sessao) {
-    Preferencias.limparPlanilhaId();
+    // Não limpar `planilha_id` aqui: `entrarComGoogle` já faz isso (com
+    // `await`) antes do login. Uma limpeza solta e não aguardada pode terminar
+    // depois de `obterPlanilhaId()` ter gravado o ID da planilha recém-criada,
+    // apagando a referência e forçando uma nova busca no Drive.
     state = state.copiarCom(
       estaAutenticado: true,
       estaCarregando: false,
@@ -113,18 +116,36 @@ class AutenticacaoNotificador extends Notifier<EstadoAutenticacao> {
 
     try {
       // Tenta restaurar sessão anterior (login silencioso) antes do interativo.
+      // No Flutter web (Google Identity Services), o login silencioso só
+      // devolve identidade (ID token) — sem access token para os escopos do
+      // Drive/Sheets. Por isso validamos que dá pra obter um header de
+      // autorização antes de aceitar a sessão restaurada; se não der, cai
+      // para o fluxo interativo abaixo, que sempre pede o access token.
       final sessaoAnterior = await servico.tentarRestaurarSessao();
       if (sessaoAnterior != null) {
-        _autenticarComSessao(sessaoAnterior);
-        return;
+        try {
+          await sessaoAnterior.obterHeaders();
+          _autenticarComSessao(sessaoAnterior);
+          return;
+        } catch (e, st) {
+          developer.log(
+            'Sessão restaurada sem autorização válida, seguindo para login interativo',
+            error: e,
+            stackTrace: st,
+            name: 'Autenticacao',
+          );
+        }
       }
 
-      final sessao = await servico.entrar();
-      state = state.copiarCom(
-        estaAutenticado: true,
-        estaCarregando: false,
-        sessao: sessao,
-      );
+      // `servico.entrar()` já publica a sessão em `sessoesConectadas`, que o
+      // listener registrado em `build()` consome chamando `_autenticarComSessao`
+      // (atualiza `state` uma única vez). Definir `state` de novo aqui causaria
+      // uma segunda notificação para o mesmo login, fazendo `TelaLogin` navegar
+      // para `TelaDashboard` duas vezes seguidas — a primeira instância é
+      // desmontada com o carregamento de dados ainda em andamento, e o uso de
+      // `ref` depois do `await` nesse carregamento lança
+      // "Bad state: ... unmounted".
+      await servico.entrar();
     } catch (e, stackTrace) {
       developer.log(
         'Erro ao fazer login com Google',

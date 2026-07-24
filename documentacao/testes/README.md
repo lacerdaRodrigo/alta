@@ -1,6 +1,6 @@
 # 📚 Documentação de Testes
 
-Guia completo dos 274 testes automatizados do Fisio Home Care.
+Guia completo dos 276 testes automatizados do Fisio Home Care.
 
 ---
 
@@ -8,7 +8,7 @@ Guia completo dos 274 testes automatizados do Fisio Home Care.
 
 1. **[VISAO_GERAL.md](./VISAO_GERAL.md)** — Overview, estrutura, como rodar
 2. **[UNITARIOS.md](./UNITARIOS.md)** — 116 testes unitários (validadores, modelos, serviços)
-3. **[WIDGETS.md](./WIDGETS.md)** — 158 testes de widget (telas, componentes, utilitários)
+3. **[WIDGETS.md](./WIDGETS.md)** — 160 testes de widget (telas, componentes, utilitários)
 
 ---
 
@@ -39,7 +39,7 @@ flutter test test/unitarios/utilitarios/validadores_test.dart
 | Unit — Serviços | 5 | 2% |
 | Widget — Telas | 137 | 50% |
 | Widget — Componentes/Utilitários | 21 | 8% |
-| **TOTAL** | **274** | **100%** |
+| **TOTAL** | **276** | **100%** |
 
 ---
 
