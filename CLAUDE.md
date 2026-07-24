@@ -365,7 +365,7 @@ flutter run
 |---|---|---|
 | Parsers `_pacienteDeLinha`/`_agendamentoDeLinha` usavam índices literais | Resolvido (usam `indicesColunas`) | ✅ |
 | IDs agendamento/evolução/auditoria por `length + 1` (race condition) | Resolvido (`GeradorId.proximo` usa max+1) | ✅ |
-| `BackdropFilter` reimplementado inline em telas | Consolidar em FisioGlass | 🟡 Média |
+| `BackdropFilter` reimplementado inline em telas | Resolvido (o redesign removeu todos os usos) | ✅ |
 | Lógica de popup duplicada em dashboard/sessoes | Resolvido (centralizado em `acoes_agendamento.dart`) | ✅ |
 | Todas as telas principais possuem testes de widget | — | ✅ |
 
