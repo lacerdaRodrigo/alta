@@ -35,10 +35,17 @@ manual** — nenhum teste automatizado cobre o SDK real do Google.
       `spreadsheets` foi restaurado nesta migração, mas contas antigas mascaram
       o problema por já terem o consentimento)
 
-> ⚠️ A `TelaLogin` sobrepõe o botão do GIS (invisível) ao botão desenhado do app,
-> porque no web `authenticate()` lança `UnsupportedError`. Se uma atualização do
-> SDK mudar o tamanho ou o DOM do botão, o toque para de cair no lugar certo — a
-> saída suportada é exibir o botão do Google diretamente, sem o desenho por baixo.
+> ⚠️ A `TelaLogin` sobrepõe o botão do GIS (quase invisível) ao botão desenhado
+> do app, porque no web `authenticate()` lança `UnsupportedError`. A sobreposição
+> foi validada no navegador (botão presente no DOM, largura alinhada, área
+> clicável cobrindo todo o desenho, e ausente enquanto os termos não são aceitos),
+> mas **nenhum teste automatizado cobre isso** — fora do web o componente vira um
+> `SizedBox.shrink()`. Três detalhes a preservar em qualquer mexida:
+> `Opacity` precisa ser > 0 (com alpha 0 o Flutter não pinta e a platform view não
+> entra no DOM); `IgnorePointer` não segura o clique de uma platform view; e o
+> GIS limita o botão a 400px, então o desenho tem que respeitar a mesma largura.
+> Se uma atualização do SDK mudar o tamanho ou o DOM do botão, a saída suportada
+> é exibir o botão do Google diretamente, sem o desenho por baixo.
 
 ### 3. Publicação nas lojas
 
