@@ -115,26 +115,24 @@ class AutenticacaoNotificador extends Notifier<EstadoAutenticacao> {
     final servico = ref.read(provedorServicoAutenticacaoGoogle);
 
     try {
-      // Tenta restaurar sessão anterior (login silencioso) antes do interativo.
-      // No Flutter web (Google Identity Services), o login silencioso só
-      // devolve identidade (ID token) — sem access token para os escopos do
-      // Drive/Sheets. Por isso validamos que dá pra obter um header de
-      // autorização antes de aceitar a sessão restaurada; se não der, cai
-      // para o fluxo interativo abaixo, que sempre pede o access token.
+      // Tenta restaurar a sessão anterior antes do fluxo interativo. Na API
+      // 7.x, `tentarRestaurarSessao` já valida a autorização dos escopos e
+      // devolve `null` quando só há identidade sem access token — o app não
+      // precisa mais checar isso por fora.
       final sessaoAnterior = await servico.tentarRestaurarSessao();
       if (sessaoAnterior != null) {
-        try {
-          await sessaoAnterior.obterHeaders();
-          _autenticarComSessao(sessaoAnterior);
-          return;
-        } catch (e, st) {
-          developer.log(
-            'Sessão restaurada sem autorização válida, seguindo para login interativo',
-            error: e,
-            stackTrace: st,
-            name: 'Autenticacao',
-          );
-        }
+        _autenticarComSessao(sessaoAnterior);
+        return;
+      }
+
+      // No web o login não pode ser disparado por código: o Google Identity
+      // Services exige que parta do botão que ele mesmo renderiza. A
+      // `TelaLogin` sobrepõe esse botão ao visual do app, e o login chega pelo
+      // stream `sessoesConectadas`. Aqui só encerramos o estado de carregamento
+      // para o botão do Google voltar a ficar utilizável.
+      if (!servico.suportaLoginProgramatico) {
+        state = state.copiarCom(estaCarregando: false);
+        return;
       }
 
       // `servico.entrar()` já publica a sessão em `sessoesConectadas`, que o

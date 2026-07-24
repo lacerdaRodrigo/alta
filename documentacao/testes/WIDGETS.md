@@ -1,4 +1,4 @@
-# 🎨 Testes de Widget (160 testes)
+# 🎨 Testes de Widget (161 testes)
 
 Testes de componentes visuais: telas, componentes reutilizáveis e utilitários
 de UI, interação do usuário e estados visuais.
@@ -76,7 +76,7 @@ valor e observações.
 
 ---
 
-### tela_login_test.dart (8 testes)
+### tela_login_test.dart (9 testes)
 
 **Tela:** Login com Google — checkbox LGPD, links legais, botão de entrada.
 
@@ -89,10 +89,17 @@ valor e observações.
 ✓ Aceitar termos e entrar chama o serviço e exibe indicador de carregamento
 ✓ Tocar de novo enquanto carrega não chama o serviço uma segunda vez
 ✓ Login que emite conta e sessão navega para o Dashboard uma única vez
+✓ Onde o login não é programático (web) não chama entrar nem trava o botão
 ```
 
 > Usa `ServicoAutenticacaoGoogleControlavel` (fake com `Completer`) para
 > inspecionar o estado de carregamento sem disparar a navegação ao dashboard.
+>
+> `ServicoAutenticacaoGoogleControlavel(suportaLoginProgramatico: false)`
+> reproduz o web, onde `GoogleSignIn.authenticate()` lança `UnsupportedError` e o
+> login parte do botão renderizado pelo GIS: `entrar()` não pode ser chamado e o
+> estado de carregamento precisa ser desfeito, senão o botão do Google ficaria
+> coberto por um `IgnorePointer` permanente.
 >
 > `ServicoAutenticacaoGoogleDuplaEmissao` reproduz o pior caso do serviço real:
 > um único login publica em `sessoesConectadas` **e** em `contasConectadas`,
@@ -489,4 +496,4 @@ flutter test test/widgets/telas/tela_pacientes_test.dart
 | Modal Detalhes Paciente | ✅ | 12 | — |
 | Rodapé Versão | ✅ | 3 | Overlay de versão |
 | Ações de Agendamento | ✅ | 6 | — |
-| **Total** | **✅** | **160** | Telas principais + componentes/utilitários |
+| **Total** | **✅** | **161** | Telas principais + componentes/utilitários |
