@@ -210,8 +210,20 @@ void main() {
   group('TelaSessoes — filtros por período e status', () {
     Future<void> montar(WidgetTester tester) async {
       final hoje = DateTime.now();
-      // Past date always in current month: midnight of today is before DateTime.now()
-      final ontem = DateTime(hoje.year, hoje.month, hoje.day);
+      // Sessão de hoje que JÁ venceu. O horário precisa ser derivado de `hoje`,
+      // não fixo: o filtro "Hoje" compara `inicioPrevisto` com o relógio, então
+      // uma hora fixa (o padrão '08:00' de `_agendamentoPara`) fazia o teste
+      // passar só quando a suíte rodava depois dessa hora — o CI em UTC de
+      // madrugada via a sessão como ainda não vencida e o teste falhava.
+      // O clamp evita cair no dia anterior quando são 00:00.
+      final inicioDoDia = DateTime(hoje.year, hoje.month, hoje.day);
+      final umMinutoAtras = hoje.subtract(const Duration(minutes: 1));
+      final vencida =
+          umMinutoAtras.isBefore(inicioDoDia) ? inicioDoDia : umMinutoAtras;
+      final ontem = DateTime(vencida.year, vencida.month, vencida.day);
+      final horaVencida =
+          '${vencida.hour.toString().padLeft(2, '0')}:'
+          '${vencida.minute.toString().padLeft(2, '0')}';
       // Future date always in current month: tonight at 23:59
       final amanha = DateTime(hoje.year, hoje.month, hoje.day, 23, 59);
 
@@ -242,6 +254,7 @@ void main() {
               'P003',
               Agendamento.situacaoAgendado,
               ontem,
+              horaInicio: horaVencida,
             ),
             _agendamentoPara(
               'A004',
