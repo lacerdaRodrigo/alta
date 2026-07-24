@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -10,9 +11,14 @@ const googleOAuthClientIdWeb = String.fromEnvironment(
   defaultValue: '',
 );
 
+/// Escopos OAuth exigidos pelo app.
+///
+/// `spreadsheets` é necessário para a Sheets API; `drive.file` dá acesso apenas
+/// aos arquivos criados pelo próprio app (usado para localizar a planilha).
 const escoposGoogleFisio = <String>[
   'email',
   'https://www.googleapis.com/auth/drive.file',
+  'https://www.googleapis.com/auth/spreadsheets',
 ];
 
 class SessaoGoogle {
@@ -41,41 +47,23 @@ class ContaGoogleConectada {
 abstract class ServicoAutenticacaoGoogle {
   Stream<ContaGoogleConectada> get contasConectadas;
   Stream<SessaoGoogle> get sessoesConectadas;
+
+  /// `false` no web: o Google Identity Services só aceita login iniciado pelo
+  /// widget que ele mesmo renderiza, então `entrar()` não pode ser chamado —
+  /// a `TelaLogin` mostra o botão do Google e o login chega pelos streams.
+  bool get suportaLoginProgramatico;
+
   Future<void> inicializar();
   Future<SessaoGoogle?> tentarRestaurarSessao();
   Future<SessaoGoogle> entrar();
   Future<void> sair();
 }
 
-GoogleSignIn _criarGoogleSignIn() {
-  if (googleOAuthClientIdWeb.isEmpty) {
-    throw StateError(
-      'GOOGLE_OAUTH_CLIENT_ID_WEB não foi definido. '
-      'Configure a variável de ambiente ou execute:\n'
-      'flutter run --dart-define=GOOGLE_OAUTH_CLIENT_ID_WEB=SEU_CLIENT_ID'
-    );
-  }
-
-  if (kIsWeb) {
-    return GoogleSignIn(
-      clientId: googleOAuthClientIdWeb,
-      scopes: escoposGoogleFisio,
-    );
-  }
-
-  // Android/iOS: clientId vem do google-services.json / GoogleService-Info.plist.
-  // serverClientId (OAuth Web) é necessário para obter access token das APIs Google.
-  return GoogleSignIn(
-    scopes: escoposGoogleFisio,
-    serverClientId: googleOAuthClientIdWeb,
-  );
-}
-
 class ServicoAutenticacaoGoogleReal implements ServicoAutenticacaoGoogle {
   final _contasController = StreamController<ContaGoogleConectada>.broadcast();
   final _sessoesController = StreamController<SessaoGoogle>.broadcast();
-  late final GoogleSignIn _googleSignIn = _criarGoogleSignIn();
-  bool _inicializado = false;
+  StreamSubscription<GoogleSignInAuthenticationEvent>? _assinaturaEventos;
+  Future<void>? _inicializacao;
 
   @override
   Stream<ContaGoogleConectada> get contasConectadas => _contasController.stream;
@@ -84,53 +72,99 @@ class ServicoAutenticacaoGoogleReal implements ServicoAutenticacaoGoogle {
   Stream<SessaoGoogle> get sessoesConectadas => _sessoesController.stream;
 
   @override
-  Future<void> inicializar() async {
-    if (_inicializado) return;
-    _inicializado = true;
-  }
+  bool get suportaLoginProgramatico => GoogleSignIn.instance.supportsAuthenticate();
 
   @override
-  Future<SessaoGoogle?> tentarRestaurarSessao() async {
-    await inicializar();
-
-    final conta = await _googleSignIn.signInSilently();
-    if (conta == null) return null;
-
-    return _criarSessao(conta);
+  Future<void> inicializar() {
+    // `initialize()` só pode rodar uma vez; guardar o Future evita que chamadas
+    // concorrentes (restauração de sessão + toque no botão) inicializem duas
+    // vezes — no web isso aparece como
+    // "google.accounts.id.initialize() is called multiple times".
+    return _inicializacao ??= _inicializar();
   }
 
-  @override
-  Future<SessaoGoogle> entrar() async {
-    await inicializar();
-
-    final conta = await _googleSignIn.signIn();
-    if (conta == null) {
-      throw StateError('Login Google cancelado.');
+  Future<void> _inicializar() async {
+    if (googleOAuthClientIdWeb.isEmpty) {
+      throw StateError(
+        'GOOGLE_OAUTH_CLIENT_ID_WEB não foi definido. '
+        'Configure a variável de ambiente ou execute:\n'
+        'flutter run --dart-define=GOOGLE_OAUTH_CLIENT_ID_WEB=SEU_CLIENT_ID',
+      );
     }
 
-    final sessao = _criarSessao(conta);
-    // A conta vai primeiro de propósito: cada emissão vira uma mudança de
-    // estado em `AutenticacaoNotificador`, e só a sessão liga
-    // `estaAutenticado`. Publicando a conta antes, a virada para autenticado é
-    // a última notificação do login — nenhum ouvinte reage duas vezes a ela.
+    await GoogleSignIn.instance.initialize(
+      // No web o clientId identifica a aplicação; no Android ele vem do
+      // google-services.json e o mesmo ID web entra como `serverClientId`,
+      // necessário para obter access token das APIs Google.
+      clientId: kIsWeb ? googleOAuthClientIdWeb : null,
+      serverClientId: kIsWeb ? null : googleOAuthClientIdWeb,
+    );
+
+    _assinaturaEventos = GoogleSignIn.instance.authenticationEvents.listen(
+      _tratarEvento,
+      onError: _contasController.addError,
+    );
+  }
+
+  Future<void> _tratarEvento(GoogleSignInAuthenticationEvent evento) async {
+    switch (evento) {
+      case GoogleSignInAuthenticationEventSignIn(:final user):
+        await _publicarSessao(user);
+      case GoogleSignInAuthenticationEventSignOut():
+        break;
+    }
+  }
+
+  /// Publica a conta e, em seguida, a sessão autorizada.
+  ///
+  /// A ordem importa: só a sessão liga `estaAutenticado` no notificador, então
+  /// deixá-la por último garante uma única notificação de "entrou" por login.
+  Future<void> _publicarSessao(GoogleSignInAccount conta) async {
+    try {
+      await _garantirAutorizacao(conta);
+    } catch (e, st) {
+      developer.log(
+        'Falha ao autorizar escopos do Google',
+        error: e,
+        stackTrace: st,
+        name: 'ServicoAutenticacaoGoogle',
+      );
+      _sessoesController.addError(e, st);
+      return;
+    }
+
     _contasController.add(
       ContaGoogleConectada(
         nomeUsuario: conta.displayName ?? conta.email,
         email: conta.email,
       ),
     );
-    _sessoesController.add(sessao);
-    return sessao;
+    _sessoesController.add(_criarSessao(conta));
+  }
+
+  /// Garante que os escopos estejam autorizados antes de considerar a sessão
+  /// válida. Autenticação (quem é o usuário) e autorização (acesso ao
+  /// Drive/Sheets) são etapas separadas na API 7.x — foi exatamente essa
+  /// distinção que faltava na 6.x e deixava a sessão sem access token.
+  Future<void> _garantirAutorizacao(GoogleSignInAccount conta) async {
+    final cliente = conta.authorizationClient;
+    final existente = await cliente.authorizationForScopes(escoposGoogleFisio);
+    if (existente != null) return;
+    await cliente.authorizeScopes(escoposGoogleFisio);
   }
 
   SessaoGoogle _criarSessao(GoogleSignInAccount conta) {
+    // Resolvido a cada requisição: no web o access token expira em 1h e não é
+    // renovado sozinho, então pedir os headers na hora do uso permite que
+    // `authorizationHeaders` devolva um token novo quando o antigo vencer.
     Future<Map<String, String>> obterHeaders() async {
-      final auth = await conta.authentication;
-      final token = auth.accessToken;
-      if (token == null || token.isEmpty) {
+      final headers = await conta.authorizationClient.authorizationHeaders(
+        escoposGoogleFisio,
+      );
+      if (headers == null) {
         throw StateError('Não foi possível obter autorização do Google.');
       }
-      return {'Authorization': 'Bearer $token'};
+      return headers;
     }
 
     return SessaoGoogle(
@@ -141,8 +175,50 @@ class ServicoAutenticacaoGoogleReal implements ServicoAutenticacaoGoogle {
   }
 
   @override
+  Future<SessaoGoogle?> tentarRestaurarSessao() async {
+    await inicializar();
+
+    final conta = await GoogleSignIn.instance.attemptLightweightAuthentication();
+    if (conta == null) return null;
+
+    // A restauração leve devolve identidade; a autorização pode ter expirado.
+    // Validar aqui evita entregar uma sessão que falharia na primeira chamada
+    // à API.
+    final headers = await conta.authorizationClient.authorizationForScopes(
+      escoposGoogleFisio,
+    );
+    if (headers == null) return null;
+
+    return _criarSessao(conta);
+  }
+
+  @override
+  Future<SessaoGoogle> entrar() async {
+    await inicializar();
+
+    if (!suportaLoginProgramatico) {
+      throw StateError(
+        'Nesta plataforma o login só pode ser iniciado pelo botão do Google.',
+      );
+    }
+
+    final conta = await GoogleSignIn.instance.authenticate(
+      scopeHint: escoposGoogleFisio,
+    );
+    await _garantirAutorizacao(conta);
+    return _criarSessao(conta);
+  }
+
+  @override
   Future<void> sair() async {
-    if (!_inicializado) return;
-    await _googleSignIn.signOut();
+    if (_inicializacao == null) return;
+    await GoogleSignIn.instance.signOut();
+  }
+
+  @visibleForTesting
+  Future<void> descartar() async {
+    await _assinaturaEventos?.cancel();
+    await _contasController.close();
+    await _sessoesController.close();
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../componentes/botao_google_renderizado.dart';
 import '../componentes/design_system.dart';
 import '../provedores/provedor_autenticacao.dart';
 import 'tela_dashboard.dart';
@@ -136,52 +137,10 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        GestureDetector(
-                          key: const Key('btn_entrar_google'),
-                          onTap: (_carregando || !termosAceitos)
-                              ? null
-                              : _entrar,
-                          child: Opacity(
-                            opacity: termosAceitos ? 1 : 0.55,
-                            child: Container(
-                              width: double.infinity,
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 15),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(15),
-                                border: Border.all(
-                                    color: const Color(0xFFE2E8F0)),
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: Colors.black
-                                          .withValues(alpha: 0.05),
-                                      blurRadius: 16,
-                                      offset: const Offset(0, 8)),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  if (_carregando)
-                                    const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 2.4,
-                                            color: FisioCores.primary))
-                                  else
-                                    const _GoogleG(),
-                                  const SizedBox(width: 11),
-                                  const Text('Continuar com Google',
-                                      style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w700,
-                                          color: FisioCores.textPrimary)),
-                                ],
-                              ),
-                            ),
-                          ),
+                        _BotaoEntrarGoogle(
+                          carregando: _carregando,
+                          termosAceitos: termosAceitos,
+                          onTap: _entrar,
                         ),
                         const SizedBox(height: 18),
                         Row(
@@ -278,6 +237,100 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Botão "Continuar com Google".
+///
+/// No web o Google Identity Services só aceita login iniciado pelo widget que
+/// ele mesmo renderiza (`GoogleSignIn.authenticate()` lança `UnsupportedError`
+/// e `supportsAuthenticate()` devolve `false`). Para preservar o visual do app,
+/// o botão do Google fica invisível **sobre** o desenho, capturando o toque.
+///
+/// ⚠️ A sobreposição depende do widget do GIS ocupar a área do botão desenhado.
+/// Se uma atualização do SDK mudar o tamanho ou o DOM do botão, o toque para de
+/// cair no lugar certo — nesse caso, a saída suportada é exibir o botão do
+/// Google diretamente, sem o desenho por baixo.
+///
+/// Fora do web `construirBotaoGoogleRenderizado` devolve um `SizedBox.shrink()`
+/// e o toque é tratado pelo `GestureDetector` normalmente.
+class _BotaoEntrarGoogle extends StatelessWidget {
+  final bool carregando;
+  final bool termosAceitos;
+  final VoidCallback onTap;
+
+  const _BotaoEntrarGoogle({
+    required this.carregando,
+    required this.termosAceitos,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final habilitado = !carregando && termosAceitos;
+    final largura = MediaQuery.of(context).size.width - 44;
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        GestureDetector(
+          key: const Key('btn_entrar_google'),
+          onTap: habilitado ? onTap : null,
+          child: Opacity(
+            opacity: termosAceitos ? 1 : 0.55,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8)),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (carregando)
+                    const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2.4, color: FisioCores.primary))
+                  else
+                    const _GoogleG(),
+                  const SizedBox(width: 11),
+                  const Text('Continuar com Google',
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: FisioCores.textPrimary)),
+                ],
+              ),
+            ),
+          ),
+        ),
+        // Só recebe o toque quando o login está liberado; enquanto os termos
+        // não forem aceitos, `IgnorePointer` deixa o clique chegar ao
+        // `GestureDetector` abaixo, que exibe a mensagem de erro.
+        Positioned.fill(
+          child: IgnorePointer(
+            ignoring: !habilitado,
+            child: Opacity(
+              opacity: 0,
+              child: OverflowBox(
+                maxWidth: largura,
+                child: construirBotaoGoogleRenderizado(larguraMinima: largura),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -4,7 +4,7 @@
 > registrado no [`CHANGELOG.md`](../CHANGELOG.md); o estado atual da arquitetura
 > está no [`CLAUDE.md`](../CLAUDE.md).
 
-**Status:** MVP funcional completo em produção (web) · 276 testes automatizados
+**Status:** MVP funcional completo em produção (web) · 277 testes automatizados
 **Atualizado em:** 2026-07-23
 
 ---
@@ -21,32 +21,26 @@ não invalida a credencial.
 - [ ] Decidir se vale reescrever o histórico (`git filter-repo`) ou apenas
       rotacionar e seguir
 
-### 2. Migrar `google_sign_in` 6.2.1 → 7.x
+### 2. Validar a migração do `google_sign_in` 7.2.0 (código pronto, falta testar)
 
-É a causa raiz estrutural dos bugs de login no web, hoje resolvidos apenas por
-mitigação. Na 6.x, `signInSilently()` devolve identidade sem access token dos
-escopos de Drive/Sheets, e `signIn()` está depreciado no web (avisos de FedCM e
-COOP no console). A 7.x separa identidade de autorização via
-`authorizationClient` (`authorizationForScopes()` / `authorizeScopes()` /
-`authorizationHeaders()`).
+Migração implementada na branch `migracao-google-sign-in-7`. Falta **validação
+manual** — nenhum teste automatizado cobre o SDK real do Google.
 
-- [ ] Restaurar a lógica do commit `dc7b46b` sobre a API 7.x
-- [ ] **Retestar o login no Android também** — não só no web
+- [ ] Login no web (preview channel): entrar, criar/abrir planilha, carregar dados
+- [ ] Login no Android em device físico — a 7.x usa Credential Manager no nativo
+- [ ] Sessão com mais de 1h: no web o access token expira em 3600s e **não é
+      renovado** pelo plugin. `obterHeaders()` chama `authorizationHeaders()` a
+      cada requisição justamente para renovar; confirmar que funciona na prática
+- [ ] Primeiro login com **conta Google sem consentimento prévio** (o escopo
+      `spreadsheets` foi restaurado nesta migração, mas contas antigas mascaram
+      o problema por já terem o consentimento)
 
-> Adiado conscientemente em 2026-07-01 para evitar reteste do fluxo Android
-> numa mudança maior de versão de pacote.
+> ⚠️ A `TelaLogin` sobrepõe o botão do GIS (invisível) ao botão desenhado do app,
+> porque no web `authenticate()` lança `UnsupportedError`. Se uma atualização do
+> SDK mudar o tamanho ou o DOM do botão, o toque para de cair no lugar certo — a
+> saída suportada é exibir o botão do Google diretamente, sem o desenho por baixo.
 
-### 3. Validar o fluxo de login com uma conta Google nova
-
-`escoposGoogleFisio` (`lib/servicos/servico_autenticacao_google.dart`) pede
-apenas `email` e `drive.file`. Contas que já usaram o app carregam
-`spreadsheets` de consentimentos anteriores e mascaram o problema — uma conta
-limpa pode não ter.
-
-- [ ] Testar o primeiro login (criação da planilha) com conta sem consentimento prévio
-- [ ] Adicionar `https://www.googleapis.com/auth/spreadsheets` aos escopos se necessário
-
-### 4. Publicação nas lojas
+### 3. Publicação nas lojas
 
 **Android**
 - [ ] Registrar SHA-1 debug no Firebase e baixar `google-services.json` atualizado
@@ -61,20 +55,20 @@ limpa pode não ter.
 
 ## 🟡 Média prioridade
 
-### 5. Tratamento de erro e retry
+### 4. Tratamento de erro e retry
 
 - [ ] Retry automático em falhas da API Google
 - [ ] Timeout handling
 - [ ] Feedback visual consistente em todas as telas
 
-### 6. WhatsApp para confirmação e contato rápido
+### 5. WhatsApp para confirmação e contato rápido
 
 - **Onde:** modal de detalhes do paciente e cards de sessão
 - **O que:** abrir conversa com mensagem pronta de confirmação, remarcação ou lembrete
 - **Exemplo:** `Olá, confirmando sua sessão de fisioterapia no dia X às Y.`
 - **Valor:** reduz faltas, agiliza confirmação e combina bem com atendimento domiciliar
 
-### 7. Testes de serviço
+### 6. Testes de serviço
 
 `test/unitarios/servicos/` cobre apenas `preferencias_test.dart`. Os serviços que
 falam com a rede só aparecem nos testes via fakes — nenhum tem teste próprio.
@@ -83,7 +77,7 @@ falam com a rede só aparecem nos testes via fakes — nenhum tem teste próprio
 - [ ] `servico_autenticacao_google.dart`
 - [ ] Fluxo de integração com a Sheets API
 
-### 8. Duplicata de planilha
+### 7. Duplicata de planilha
 
 `ServicoGoogleDrive.buscarPlanilhaBanco()` consulta `name contains
 '__saas_fisio_db__'` ordenando por `modifiedTime desc` e usa a primeira. Havendo
@@ -91,24 +85,24 @@ mais de uma planilha, escolhe silenciosamente a mais recente.
 
 - [ ] Usar correspondência exata de nome, ou avisar o usuário quando houver duplicatas
 
-### 9. Cache local offline
+### 8. Cache local offline
 
 - [ ] Escolher e adicionar dependências de armazenamento local (só quando for implementar)
 - [ ] Salvar `SessaoGoogle` (tokens) localmente para login offline
 - [ ] Cache dos dados da planilha para leitura sem internet
 - [ ] Indicador visual de conectividade
 
-### 10. Relatório do paciente (PDF)
+### 9. Relatório do paciente (PDF)
 
 Perfil, dados clínicos principais, histórico de evoluções, dor, condição clínica
 e sessões realizadas. Útil para encaminhamentos, prestação de contas e auditoria.
 
-### 11. Exportar dados
+### 10. Exportar dados
 
 - [ ] Agenda em CSV
 - [ ] Financeiro em CSV
 
-### 12. Backup automático para Google Drive
+### 11. Backup automático para Google Drive
 
 ---
 
@@ -133,7 +127,9 @@ e sessões realizadas. Útil para encaminhamentos, prestação de contas e audit
 ## Observações técnicas
 
 - **Banco:** Google Sheets (5 abas: Pacientes, Agenda, Evolucoes, Configuracoes, Auditoria) + aba `Versao`
-- **Autenticação:** `google_sign_in` 6.2.1, escopos OAuth `email` + `drive.file`
+- **Autenticação:** `google_sign_in` 7.2.0 + `google_sign_in_web` 1.1.3, escopos OAuth
+  `email` + `drive.file` + `spreadsheets`. No web o login parte do botão renderizado
+  pelo GIS; fora do web, de `GoogleSignIn.instance.authenticate()`
 - **Testes sensíveis a relógio:** fixtures que representam "sessão de hoje já
   vencida" devem derivar o horário de `DateTime.now()`, nunca fixá-lo. O CI roda
   em UTC e uma hora fixa faz o teste passar só em parte do dia

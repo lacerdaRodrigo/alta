@@ -25,7 +25,7 @@
 | **Riverpod** | 3.x | Estado e injeção de dependência |
 | **Google Sheets API** | v4 | Banco de dados BYODB |
 | **Google Drive API** | v3 | Localizar planilha do usuário |
-| **Google Sign-In** | 6.2.1 | Autenticação OAuth |
+| **Google Sign-In** | 7.2.0 | Autenticação OAuth (web: `google_sign_in_web` 1.1.3) |
 | **Table Calendar** | 3.1.3 | Visão calendário na agenda |
 | **Firebase Hosting** | — | Deploy web |
 
@@ -102,14 +102,14 @@ fisio-home-care/
 │   │       ├── utilitarios_data_test.dart   (23 testes)
 │   │       └── gerador_id_test.dart         (8 testes — 100% cobertura)
 │   │
-│   └── widgets/                     # 160 testes — UI + componentes
+│   └── widgets/                     # 161 testes — UI + componentes
 │       ├── componentes/
 │       │   ├── modal_detalhes_paciente_test.dart   (12 testes)
 │       │   └── rodape_versao_test.dart             (3 testes)
 │       ├── utilitarios/
 │       │   └── acoes_agendamento_test.dart         (6 testes)
 │       └── telas/
-│           ├── tela_login_test.dart                  (8 testes — inclui navegação única pós-login)
+│           ├── tela_login_test.dart                  (9 testes — navegação única + login não-programático)
 │           ├── tela_dashboard_test.dart              (13 testes)
 │           ├── tela_cadastro_paciente_test.dart      (23 testes)
 │           ├── tela_editar_paciente_test.dart        (6 testes — campos travados + atualização)
@@ -134,9 +134,9 @@ fisio-home-care/
 │   ├── chaves.md                    # (no .gitignore) — credenciais
 │   └── testes/
 │       ├── README.md                # Índice de testes
-│       ├── VISAO_GERAL.md           # Overview 276 testes
+│       ├── VISAO_GERAL.md           # Overview 277 testes
 │       ├── UNITARIOS.md             # Detalhe dos 116 unitários
-│       └── WIDGETS.md               # Detalhe dos 160 widgets
+│       └── WIDGETS.md               # Detalhe dos 161 widgets
 │
 ├── QA/
 │   └── qa.md                        # Script QA manual (NOT E2E automatizado)
@@ -259,7 +259,7 @@ Paciente.calcularIdade()   // ✓ delega para UtilitariosData
 
 ---
 
-## Testes (276 testes automatizados)
+## Testes (277 testes automatizados)
 
 ### Estrutura
 
@@ -271,7 +271,7 @@ test/
 │   ├── servicos/       — 5 testes (preferencias)
 │   └── utilitarios/    — 86 testes (validadores, data, CPF, gerador_id)
 │
-└── widgets/    (160 testes)
+└── widgets/    (161 testes)
     ├── telas/        — 12 telas principais (UI, interação)
     ├── componentes/  — modal de detalhes do paciente + rodapé versão
     └── utilitarios/  — ações de agendamento
@@ -304,7 +304,7 @@ flutter test --coverage
 ✅ **Validação de entrada** — 55 testes (CPF, telefone, nome, data)  
 ✅ **Modelos** — 25 testes (serialização, cópia, status)  
 ✅ **Utilitários** — 31 testes (idade, formatação, geração de ID)  
-✅ **UI + Interação** — 160 testes (12 telas principais + componentes/utilitários)  
+✅ **UI + Interação** — 161 testes (12 telas principais + componentes/utilitários)  
 
 ❌ **Não coberto:**
 - Google Sheets API real (usaria quota, seria lento)
@@ -430,7 +430,7 @@ make release-prod  # mescla develop → master → dispara deploy de produção 
 | `documentacao/ESPECIFICACOES_TELAS.md` | Requisitos funcionais das telas | ✅ |
 | `documentacao/SEGURANCA_E_DADOS.md` | LGPD, OAuth, modelo BYODB | ✅ |
 | `documentacao/IMPLEMENTAR.md` | Roadmap priorizado | ✅ |
-| `documentacao/testes/` | 276 testes automatizados | ✅ |
+| `documentacao/testes/` | 277 testes automatizados | ✅ |
 | `documentacao/CI_CD.md` | Pipeline GitHub Actions: fluxo, secrets, uso e troubleshooting | ✅ |
 | `QA/qa.md` | Script QA manual (não é E2E) | ✅ |
 

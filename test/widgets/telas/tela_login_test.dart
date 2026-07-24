@@ -14,6 +14,8 @@ import '../../unitarios/auxiliares/fakes.dart';
 /// inspecionar o estado de carregamento sem disparar a navegação real.
 class ServicoAutenticacaoGoogleControlavel
     implements ServicoAutenticacaoGoogle {
+  ServicoAutenticacaoGoogleControlavel({this.suportaLoginProgramatico = true});
+
   final _entrar = Completer<SessaoGoogle>();
   bool entrarFoiChamado = false;
   int vezesChamado = 0;
@@ -23,6 +25,10 @@ class ServicoAutenticacaoGoogleControlavel
 
   @override
   Stream<SessaoGoogle> get sessoesConectadas => const Stream.empty();
+
+  /// `false` reproduz o web, onde o login parte do botão do Google.
+  @override
+  final bool suportaLoginProgramatico;
 
   @override
   Future<void> inicializar() async {}
@@ -55,6 +61,9 @@ class ServicoAutenticacaoGoogleDuplaEmissao
 
   @override
   Stream<SessaoGoogle> get sessoesConectadas => _sessoes.stream;
+
+  @override
+  bool get suportaLoginProgramatico => true;
 
   @override
   Future<void> inicializar() async {}
@@ -241,6 +250,30 @@ void main() {
         await tester.pump();
 
         expect(servico.vezesChamado, 1);
+      },
+    );
+
+    testWidgets(
+      'onde o login não é programático (web) não chama entrar nem trava o botão',
+      (tester) async {
+        final servico = ServicoAutenticacaoGoogleControlavel(
+          suportaLoginProgramatico: false,
+        );
+        await tester.pumpWidget(criarAppTeste(servico));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const Key('checkbox_termos')));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const Key('btn_entrar_google')));
+        await tester.pumpAndSettle();
+
+        // No web o GIS exige que o login parta do botão que ele renderiza, então
+        // `entrar()` não pode ser chamado — e o estado de carregamento precisa
+        // ser desfeito, senão o botão do Google ficaria coberto por um
+        // `IgnorePointer` para sempre.
+        expect(servico.entrarFoiChamado, isFalse);
+        expect(find.byType(CircularProgressIndicator), findsNothing);
       },
     );
 
