@@ -296,6 +296,23 @@ void main() {
         expect(find.byType(TelaDashboard), findsOneWidget);
       }
     });
+
+    testWidgets('tocar em paciente abre modal de detalhes', (tester) async {
+      await _montar(
+        tester,
+        _criarApp(carregamento: _carregado, pacientes: [_paciente()]),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Pacientes'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('João Dashboard'));
+      await tester.pumpAndSettle();
+
+      // Bottom sheet de detalhes com ação de editar
+      expect(find.text('Editar Paciente'), findsOneWidget);
+    });
   });
 
   group('TelaDashboard — agenda e pendências', () {

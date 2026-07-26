@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../modelos/agendamento.dart';
 import '../componentes/design_system.dart';
+import '../componentes/modal_detalhes_paciente.dart';
 import '../provedores/provedores_dados.dart';
 import '../utilitarios/utilitarios_data.dart';
 import '../utilitarios/acoes_agendamento.dart';
@@ -84,7 +85,9 @@ class _TelaDashboardState extends ConsumerState<TelaDashboard> {
         onAbrir: (a) => _abrirAcoesAgendamento(context, a),
       );
     } else if (_indiceSelecionado == 2) {
-      corpo = const TelaPacientes();
+      corpo = TelaPacientes(
+        onAbrir: (p) => mostrarModalDetalhesPaciente(context, p),
+      );
     } else {
       corpo = const TelaFinanceiro();
     }

@@ -1,6 +1,6 @@
 # 📚 Documentação de Testes
 
-Guia completo dos 277 testes automatizados do Fisio Home Care.
+Guia completo dos 286 testes automatizados do Fisio Home Care.
 
 ---
 
@@ -8,7 +8,7 @@ Guia completo dos 277 testes automatizados do Fisio Home Care.
 
 1. **[VISAO_GERAL.md](./VISAO_GERAL.md)** — Overview, estrutura, como rodar
 2. **[UNITARIOS.md](./UNITARIOS.md)** — 116 testes unitários (validadores, modelos, serviços)
-3. **[WIDGETS.md](./WIDGETS.md)** — 161 testes de widget (telas, componentes, utilitários)
+3. **[WIDGETS.md](./WIDGETS.md)** — 170 testes de widget (telas, componentes, utilitários)
 
 ---
 
@@ -39,7 +39,7 @@ flutter test test/unitarios/utilitarios/validadores_test.dart
 | Unit — Serviços | 5 | 2% |
 | Widget — Telas | 137 | 50% |
 | Widget — Componentes/Utilitários | 21 | 8% |
-| **TOTAL** | **277** | **100%** |
+| **TOTAL** | **286** | **100%** |
 
 ---
 
@@ -48,7 +48,7 @@ flutter test test/unitarios/utilitarios/validadores_test.dart
 ✅ **Validação de entrada** — CPF, telefone, nome, data, email  
 ✅ **Modelos de dados** — Serialização, transformação, cópia  
 ✅ **Utilitários** — Cálculo de idade, formatação de datas  
-✅ **UI e interação** — 12 telas principais + modal de detalhes e ações de agendamento  
+✅ **UI e interação** — 13 telas principais + modal de detalhes e ações de agendamento  
 
 ❌ **Não coberto:** Google Sheets API real, Google Sign-In real, E2E, performance
 

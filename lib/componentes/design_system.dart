@@ -583,7 +583,7 @@ class FisioFilterChips extends StatelessWidget {
 // =============================================================================
 // CAMPO DE BUSCA
 // =============================================================================
-class FisioSearchField extends StatelessWidget {
+class FisioSearchField extends StatefulWidget {
   final String hint;
   final ValueChanged<String>? onChanged;
   final bool sobreGradiente;
@@ -595,39 +595,65 @@ class FisioSearchField extends StatelessWidget {
   });
 
   @override
+  State<FisioSearchField> createState() => _FisioSearchFieldState();
+}
+
+class _FisioSearchFieldState extends State<FisioSearchField> {
+  // Controller/focus próprios: o pai faz setState a cada tecla e, sem estado
+  // persistente, o TextField era recriado — no web isso desincronizava o
+  // <input> nativo do DOM e aparecia um segundo campo fantasma.
+  final _controller = TextEditingController();
+  final _focus = FocusNode();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final corTexto = sobreGradiente ? Colors.white : FisioCores.textPrimary;
-    final corHint = sobreGradiente
-        ? Colors.white.withValues(alpha: 0.78)
-        : FisioCores.textMuted;
+    // Pill branco flutuante, on-brand: ícone e placeholder em violeta suave
+    // (sem cinza), sombra leve no lugar da borda. Compacto.
+    const corTexto = FisioCores.textPrimary;
+    final corHint = FisioCores.primary.withValues(alpha: 0.55);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 2),
+      padding: const EdgeInsets.only(left: 12),
       decoration: BoxDecoration(
-        color: sobreGradiente
-            ? Colors.white.withValues(alpha: 0.16)
-            : const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(13),
-        border: Border.all(
-            color: sobreGradiente
-                ? Colors.white.withValues(alpha: 0.2)
-                : const Color(0xFFE2E8F0)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: FisioCores.primaryDark.withValues(alpha: 0.18),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Icon(Icons.search_rounded, size: 19, color: corHint),
-          const SizedBox(width: 10),
+          Icon(Icons.search_rounded, size: 18, color: corHint),
+          const SizedBox(width: 8),
           Expanded(
             child: TextField(
-              onChanged: onChanged,
-              style: TextStyle(
-                  fontSize: 13.5, fontWeight: FontWeight.w500, color: corTexto),
-              cursorColor: corTexto,
+              controller: _controller,
+              focusNode: _focus,
+              onChanged: widget.onChanged,
+              style: const TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w500, color: corTexto),
+              cursorColor: FisioCores.primary,
               decoration: InputDecoration(
                 isDense: true,
                 border: InputBorder.none,
-                hintText: hint,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                filled: false,
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 11, horizontal: 0),
+                hintText: widget.hint,
                 hintStyle: TextStyle(
-                    fontSize: 13.5, fontWeight: FontWeight.w500, color: corHint),
+                    fontSize: 13, fontWeight: FontWeight.w500, color: corHint),
               ),
             ),
           ),
