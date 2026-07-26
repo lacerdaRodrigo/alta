@@ -38,6 +38,7 @@ fisio-home-care/
 ├── lib/
 │   ├── main.dart                    # Ponto de entrada
 │   ├── telas/                       # Screens UI
+│   │   ├── tela_splash.dart         # Abertura animada (ECG + batimento)
 │   │   ├── tela_login.dart
 │   │   ├── tela_dashboard.dart
 │   │   ├── tela_pacientes.dart
@@ -102,20 +103,21 @@ fisio-home-care/
 │   │       ├── utilitarios_data_test.dart   (23 testes)
 │   │       └── gerador_id_test.dart         (8 testes — 100% cobertura)
 │   │
-│   └── widgets/                     # 161 testes — UI + componentes
+│   └── widgets/                     # 170 testes — UI + componentes
 │       ├── componentes/
 │       │   ├── modal_detalhes_paciente_test.dart   (12 testes)
 │       │   └── rodape_versao_test.dart             (3 testes)
 │       ├── utilitarios/
 │       │   └── acoes_agendamento_test.dart         (6 testes)
 │       └── telas/
+│           ├── tela_splash_test.dart                 (7 testes — abertura animada + handoff para o login)
 │           ├── tela_login_test.dart                  (9 testes — navegação única + login não-programático)
-│           ├── tela_dashboard_test.dart              (13 testes)
+│           ├── tela_dashboard_test.dart              (14 testes)
 │           ├── tela_cadastro_paciente_test.dart      (23 testes)
 │           ├── tela_editar_paciente_test.dart        (6 testes — campos travados + atualização)
 │           ├── tela_editar_sessao_test.dart          (7 testes — editar/reagendar sessão)
 │           ├── tela_financeiro_test.dart             (8 testes — resumo financeiro mensal)
-│           ├── tela_pacientes_test.dart              (11 testes)
+│           ├── tela_pacientes_test.dart              (12 testes)
 │           ├── tela_registro_evolucao_test.dart      (23 testes — inclui timeline e ditado por voz)
 │           ├── tela_sessoes_test.dart                (10 testes)
 │           ├── tela_nova_sessao_test.dart             (9 testes)
@@ -134,19 +136,23 @@ fisio-home-care/
 │   ├── chaves.md                    # (no .gitignore) — credenciais
 │   └── testes/
 │       ├── README.md                # Índice de testes
-│       ├── VISAO_GERAL.md           # Overview 277 testes
+│       ├── VISAO_GERAL.md           # Overview 286 testes
 │       ├── UNITARIOS.md             # Detalhe dos 116 unitários
-│       └── WIDGETS.md               # Detalhe dos 161 widgets
+│       └── WIDGETS.md               # Detalhe dos 170 widgets
 │
 ├── QA/
 │   └── qa.md                        # Script QA manual (NOT E2E automatizado)
+│
+├── tool/                            # Scripts de build (fora de test/)
+│   ├── gerar_icones.dart            # 🔑 Ícone do app, desenhado em código
+│   └── finalizar_icones.py          # Alfa do iOS + .ico do Windows (Pillow)
 │
 ├── android/                         # Config Firebase, signing
 ├── ios/                             # Config iOS (futuro)
 ├── web/                             # Config web
 ├── pubspec.yaml                     # Dependências (patrol removido)
 ├── analysis_options.yaml            # Lints rigorosos
-├── Makefile                         # Targets: dev, test, lint, prod
+├── Makefile                         # Targets: dev, test, lint, icones, prod
 ├── CLAUDE.md                        # Este arquivo
 ├── README.md                        # Getting started
 ├── CHANGELOG.md                     # Histórico versões
@@ -259,7 +265,7 @@ Paciente.calcularIdade()   // ✓ delega para UtilitariosData
 
 ---
 
-## Testes (277 testes automatizados)
+## Testes (286 testes automatizados)
 
 ### Estrutura
 
@@ -271,8 +277,8 @@ test/
 │   ├── servicos/       — 5 testes (preferencias)
 │   └── utilitarios/    — 86 testes (validadores, data, CPF, gerador_id)
 │
-└── widgets/    (161 testes)
-    ├── telas/        — 12 telas principais (UI, interação)
+└── widgets/    (170 testes)
+    ├── telas/        — 13 telas principais (UI, interação)
     ├── componentes/  — modal de detalhes do paciente + rodapé versão
     └── utilitarios/  — ações de agendamento
 ```
@@ -304,7 +310,7 @@ flutter test --coverage
 ✅ **Validação de entrada** — 55 testes (CPF, telefone, nome, data)  
 ✅ **Modelos** — 25 testes (serialização, cópia, status)  
 ✅ **Utilitários** — 31 testes (idade, formatação, geração de ID)  
-✅ **UI + Interação** — 161 testes (12 telas principais + componentes/utilitários)  
+✅ **UI + Interação** — 170 testes (13 telas principais + componentes/utilitários)  
 
 ❌ **Não coberto:**
 - Google Sheets API real (usaria quota, seria lento)
@@ -396,6 +402,38 @@ disso.
 
 ---
 
+## Identidade visual — abertura e ícone
+
+Três peças usam **o mesmo gradiente** (`FisioGradients.header`: `#8A6FF0` →
+`#6C4CE0` → `#4A2FB2`) e **o mesmo símbolo** (coração). Mudou uma, confira as outras.
+
+| Peça | Onde | Observação |
+|---|---|---|
+| Splash animada | `lib/telas/tela_splash.dart` | ECG PQRST + batimento; termina na métrica exata da `TelaLogin` |
+| Splash nativa Android | `android/.../drawable*/launch_background.xml` + `values/colors.xml` | Gradiente, para não piscar branco antes do engine |
+| Splash nativa web | `web/index.html` (`#splash-fisio`) | Removida no evento `flutter-first-frame` |
+| Ícone do app | `tool/gerar_icones.dart` | Regerar com `make icones` |
+
+### Ícone: regras que não podem ser quebradas
+
+- **Não edite os PNGs à mão.** Eles são saída de `tool/gerar_icones.dart`; a
+  próxima execução de `make icones` sobrescreve tudo. Mude o desenho no Dart.
+- **O gerador fica em `tool/`, nunca em `test/`** — senão `flutter test` (e a CI)
+  reescreveria os ícones a cada execução.
+- **Cada tamanho é renderizado direto**, não redimensionado a partir do 1024 —
+  é o que mantém o traço limpo a 20px.
+- **Zona segura do ícone adaptativo:** a camada de frente tem 108dp de quadro mas
+  só 66dp visíveis garantidos. A marca ocupa 50% da largura para caber em
+  qualquer máscara de launcher.
+- **iOS não aceita canal alfa** no ícone (a App Store rejeita); quem remove é
+  `tool/finalizar_icones.py`. Rodar só o gerador Dart deixa os PNGs do iOS
+  inválidos para publicação.
+- `AndroidManifest.xml` declara `android:icon` **e** `android:roundIcon`; o
+  segundo precisa existir como PNG em todas as densidades (launchers pré-API 26),
+  não só no `mipmap-anydpi-v26`.
+
+---
+
 ## Publicar
 
 ```bash
@@ -455,7 +493,7 @@ make release-prod  # mescla develop → master → dispara deploy de produção 
 | `documentacao/ESPECIFICACOES_TELAS.md` | Requisitos funcionais das telas | ✅ |
 | `documentacao/SEGURANCA_E_DADOS.md` | LGPD, OAuth, modelo BYODB | ✅ |
 | `documentacao/IMPLEMENTAR.md` | Roadmap priorizado | ✅ |
-| `documentacao/testes/` | 277 testes automatizados | ✅ |
+| `documentacao/testes/` | 286 testes automatizados | ✅ |
 | `documentacao/CI_CD.md` | Pipeline GitHub Actions: fluxo, secrets, uso e troubleshooting | ✅ |
 | `QA/qa.md` | Script QA manual (não é E2E) | ✅ |
 

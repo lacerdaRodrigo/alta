@@ -6,6 +6,7 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Fisio Home Care">
+  <meta name="theme-color" content="#6C4CE0">
 
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
@@ -24,8 +25,129 @@
 
   <title>Fisio Home Care</title>
   <link rel="manifest" href="manifest.json">
+
+  <!-- Splash nativa do web: mesmo gradiente e mesmo logotipo da TelaSplash do
+       Flutter, para não haver tela branca enquanto o engine carrega. -->
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; background: #4A2FB2; }
+
+    #splash-fisio {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      background: linear-gradient(135deg, #8A6FF0 0%, #6C4CE0 50%, #4A2FB2 100%);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      transition: opacity .38s ease;
+    }
+
+    #splash-fisio.saindo { opacity: 0; pointer-events: none; }
+
+    #splash-fisio .brilho {
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,.22) 0%, rgba(124,185,168,.10) 45%, transparent 70%);
+      animation: fisio-brilho 1.8s ease-in-out infinite;
+    }
+
+    #splash-fisio .tile {
+      position: relative;
+      width: 74px;
+      height: 74px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, .18);
+      border: 1px solid rgba(255, 255, 255, .3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fisio-batimento 1.8s ease-in-out infinite;
+    }
+
+    #splash-fisio .tile svg { width: 38px; height: 38px; fill: #fff; }
+
+    #splash-fisio .titulo {
+      position: relative;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.6px;
+      color: #fff;
+    }
+
+    #splash-fisio .ecg { position: relative; width: 220px; height: 46px; }
+
+    #splash-fisio .ecg path {
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 300;
+      stroke-dashoffset: 300;
+      filter: drop-shadow(0 0 6px rgba(232, 213, 183, .55));
+      animation: fisio-traco 1.8s ease-in-out infinite;
+    }
+
+    /* Batimento real: sístole forte seguida do eco mais fraco. */
+    @keyframes fisio-batimento {
+      0%, 55%, 100% { transform: scale(1); }
+      14% { transform: scale(1.10); }
+      26% { transform: scale(1.04); }
+    }
+
+    @keyframes fisio-brilho {
+      0%, 100% { opacity: .55; transform: scale(.94); }
+      14% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes fisio-traco {
+      0% { stroke-dashoffset: 300; }
+      70%, 100% { stroke-dashoffset: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #splash-fisio .tile,
+      #splash-fisio .brilho,
+      #splash-fisio .ecg path { animation: none; }
+      #splash-fisio .ecg path { stroke-dashoffset: 0; }
+    }
+  </style>
 </head>
 <body>
+  <div id="splash-fisio">
+    <div class="brilho"></div>
+    <div class="tile">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 21s-7.5-4.7-9.3-9A5.4 5.4 0 0 1 12 6.6 5.4 5.4 0 0 1 21.3 12c-1.8 4.3-9.3 9-9.3 9z"/>
+      </svg>
+    </div>
+    <div class="titulo">Fisio Home Care</div>
+    <svg class="ecg" viewBox="0 0 220 46" aria-hidden="true">
+      <path d="M0 30 H22 Q28 18 34 30 H46 L52 34 L59 6 L66 40 L71 30 H84 Q94 20 104 30 H132 Q138 18 144 30 H156 L162 34 L169 6 L176 40 L181 30 H194 Q204 20 214 30 H220"/>
+    </svg>
+  </div>
+  <script>
+    // Remove a splash assim que o Flutter desenha o primeiro frame.
+    (function () {
+      var removida = false;
+      function removerSplash() {
+        if (removida) return;
+        removida = true;
+        var el = document.getElementById('splash-fisio');
+        if (!el) return;
+        el.classList.add('saindo');
+        setTimeout(function () { el.remove(); }, 400);
+      }
+      window.addEventListener('flutter-first-frame', removerSplash);
+      // Rede de segurança: se o evento não vier, não travamos a tela.
+      setTimeout(removerSplash, 12000);
+    })();
+  </script>
   <script>
     // Desabilita o service worker para evitar cache obsoleto entre deploys.
     // Com o service worker ativo, o navegador ignora os headers Cache-Control

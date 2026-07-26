@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'componentes/design_system.dart';
 import 'componentes/rodape_versao.dart';
-import 'telas/tela_login.dart';
+import 'telas/tela_splash.dart';
 
 void main() {
   runApp(const ProviderScope(child: FisioHomeCareApp()));
@@ -167,7 +167,7 @@ class FisioHomeCareApp extends StatelessWidget {
       ),
       builder: (context, child) =>
           VersaoOverlay(child: child ?? const SizedBox.shrink()),
-      home: const TelaLogin(),
+      home: const TelaSplash(),
     );
   }
 }

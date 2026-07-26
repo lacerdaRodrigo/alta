@@ -61,5 +61,12 @@ make prod-web
 make prod-android
 ```
 
+## Ícone do aplicativo
+O ícone é desenhado em código (`tool/gerar_icones.dart`) e renderizado pelo engine do Flutter em cada tamanho final — Android (legado, redondo, adaptativo e monocromático), web, iOS, macOS e Windows. Não edite os PNGs à mão; ajuste o desenho e regere:
+
+```bash
+make icones
+```
+
 ## Segurança e LGPD
 O aplicativo opera num modelo soberano: o fisioterapeuta conecta a própria conta do Google e atua como Controlador dos dados. Não há servidores centrais de terceiros processando os prontuários.

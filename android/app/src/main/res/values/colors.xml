@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Espelha as cores de lib/componentes/design_system.dart (FisioCores). -->
+<resources>
+    <color name="fisio_primary_light">#FF8A6FF0</color>
+    <color name="fisio_primary">#FF6C4CE0</color>
+    <color name="fisio_primary_dark">#FF4A2FB2</color>
+</resources>

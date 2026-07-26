@@ -27,6 +27,11 @@ test: ## Roda todos os testes Flutter
 lint: ## Roda análise estática (flutter analyze)
 	flutter analyze
 
+icones: ## Regera o ícone do app em todas as plataformas (Android, web, iOS, macOS, Windows)
+	flutter test tool/gerar_icones.dart
+	python3 tool/finalizar_icones.py
+	@echo "Ícones regerados. Confira o diff antes de commitar."
+
 # ---------------------------------------------------------------------------
 # CI/CD — fluxo via GitHub Actions (auxiliares -> develop -> master)
 # ---------------------------------------------------------------------------
