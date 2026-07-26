@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../componentes/design_system.dart';
 import '../modelos/paciente.dart';
 import '../provedores/provedores_dados.dart';
+import 'tela_historico_geral_evolucoes.dart';
 
 class TelaPacientes extends ConsumerStatefulWidget {
   final void Function(Paciente)? onAbrir;
@@ -83,6 +84,7 @@ class _TelaPacientesState extends ConsumerState<TelaPacientes> {
                 selecionado: _filtro.index,
                 onChanged: (i) =>
                     setState(() => _filtro = FiltroPacientes.values[i]),
+                trailing: _botaoHistorico(),
               ),
             ),
             Expanded(
@@ -117,6 +119,30 @@ class _TelaPacientesState extends ConsumerState<TelaPacientes> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _botaoHistorico() {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => const TelaHistoricoGeralEvolucoes()),
+      ),
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 15),
+        decoration: BoxDecoration(
+          color: FisioCores.card,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: const Text('Evoluções',
+            style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                color: FisioCores.textSecondary)),
       ),
     );
   }

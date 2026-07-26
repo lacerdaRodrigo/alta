@@ -235,7 +235,7 @@ void main() {
       expect(find.text('Sessões'), findsWidgets);
     });
 
-    testWidgets('link Histórico de evoluções navega para a tela', (
+    testWidgets('início não exibe mais o card de histórico de evoluções', (
       tester,
     ) async {
       await _montar(
@@ -244,10 +244,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Histórico de evoluções'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Evoluções'), findsOneWidget);
+      expect(find.text('Histórico de evoluções'), findsNothing);
     });
   });
 

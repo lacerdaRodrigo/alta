@@ -534,22 +534,27 @@ class FisioFilterChips extends StatelessWidget {
   final List<String> filtros;
   final int selecionado;
   final ValueChanged<int> onChanged;
+  // Item de ação opcional, rolando junto com os chips no mesmo scroll.
+  final Widget? trailing;
   const FisioFilterChips({
     super.key,
     required this.filtros,
     required this.selecionado,
     required this.onChanged,
+    this.trailing,
   });
 
   @override
   Widget build(BuildContext context) {
+    final total = filtros.length + (trailing != null ? 1 : 0);
     return SizedBox(
       height: 38,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: filtros.length,
+        itemCount: total,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
+          if (i >= filtros.length) return trailing!;
           final sel = i == selecionado;
           return GestureDetector(
             onTap: () => onChanged(i),
