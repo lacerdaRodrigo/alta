@@ -1,9 +1,9 @@
-import 'package:fisio_home_care/modelos/agendamento.dart';
-import 'package:fisio_home_care/modelos/paciente.dart';
-import 'package:fisio_home_care/provedores/provedor_autenticacao.dart';
-import 'package:fisio_home_care/provedores/provedores_dados.dart';
-import 'package:fisio_home_care/telas/tela_configuracoes.dart';
-import 'package:fisio_home_care/telas/tela_dashboard.dart';
+import 'package:alta/modelos/agendamento.dart';
+import 'package:alta/modelos/paciente.dart';
+import 'package:alta/provedores/provedor_autenticacao.dart';
+import 'package:alta/provedores/provedores_dados.dart';
+import 'package:alta/telas/tela_configuracoes.dart';
+import 'package:alta/telas/tela_dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -235,7 +235,7 @@ void main() {
       expect(find.text('Sessões'), findsWidgets);
     });
 
-    testWidgets('link Histórico de evoluções navega para a tela', (
+    testWidgets('início não exibe mais o card de histórico de evoluções', (
       tester,
     ) async {
       await _montar(
@@ -244,10 +244,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Histórico de evoluções'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Evoluções'), findsOneWidget);
+      expect(find.text('Histórico de evoluções'), findsNothing);
     });
   });
 
@@ -298,6 +295,23 @@ void main() {
         // If key not found, look for any way to find the FAB
         expect(find.byType(TelaDashboard), findsOneWidget);
       }
+    });
+
+    testWidgets('tocar em paciente abre modal de detalhes', (tester) async {
+      await _montar(
+        tester,
+        _criarApp(carregamento: _carregado, pacientes: [_paciente()]),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Pacientes'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('João Dashboard'));
+      await tester.pumpAndSettle();
+
+      // Bottom sheet de detalhes com ação de editar
+      expect(find.text('Editar Paciente'), findsOneWidget);
     });
   });
 

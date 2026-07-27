@@ -3,11 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fisio_home_care/telas/tela_configuracoes.dart';
-import 'package:fisio_home_care/telas/tela_login.dart';
-import 'package:fisio_home_care/provedores/provedor_autenticacao.dart';
-import 'package:fisio_home_care/provedores/provedores_dados.dart';
-import 'package:fisio_home_care/servicos/servico_repositorio_dados.dart';
+import 'package:alta/telas/tela_configuracoes.dart';
+import 'package:alta/telas/tela_login.dart';
+import 'package:alta/provedores/provedor_autenticacao.dart';
+import 'package:alta/provedores/provedores_dados.dart';
+import 'package:alta/servicos/servico_repositorio_dados.dart';
 import '../../unitarios/auxiliares/fakes.dart';
 
 class FakeRepoConfig extends Fake implements RepositorioDadosGoogle {

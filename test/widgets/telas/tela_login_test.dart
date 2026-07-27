@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fisio_home_care/telas/tela_dashboard.dart';
-import 'package:fisio_home_care/telas/tela_login.dart';
-import 'package:fisio_home_care/provedores/provedor_autenticacao.dart';
-import 'package:fisio_home_care/servicos/servico_autenticacao_google.dart';
+import 'package:alta/telas/tela_dashboard.dart';
+import 'package:alta/telas/tela_login.dart';
+import 'package:alta/provedores/provedor_autenticacao.dart';
+import 'package:alta/servicos/servico_autenticacao_google.dart';
 import '../../unitarios/auxiliares/fakes.dart';
 
 /// Fake cujo [entrar] só completa quando o teste mandar, permitindo
@@ -144,12 +144,9 @@ void main() {
       await tester.pumpWidget(criarAppTeste(ServicoAutenticacaoGoogleFake()));
       await tester.pumpAndSettle();
 
+      expect(find.text('Alta', findRichText: true), findsOneWidget);
       expect(
-        find.textContaining('Fisio', findRichText: true),
-        findsWidgets,
-      );
-      expect(
-        find.textContaining('Care', findRichText: true),
+        find.textContaining('fisioterapia', findRichText: true),
         findsWidgets,
       );
       expect(

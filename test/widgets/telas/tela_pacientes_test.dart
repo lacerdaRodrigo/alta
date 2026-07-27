@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fisio_home_care/modelos/paciente.dart';
-import 'package:fisio_home_care/provedores/provedores_dados.dart';
-import 'package:fisio_home_care/telas/tela_pacientes.dart';
+import 'package:alta/modelos/paciente.dart';
+import 'package:alta/modelos/evolucao.dart';
+import 'package:alta/provedores/provedores_dados.dart';
+import 'package:alta/telas/tela_pacientes.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 class PacientesNotifierComDados extends ListaPacientesNotifier {
@@ -13,6 +14,15 @@ class PacientesNotifierComDados extends ListaPacientesNotifier {
 
   @override
   List<Paciente> build() => _dados;
+}
+
+class EvolucoesNotifierComDados extends ListaEvolucoesNotifier {
+  final List<Evolucao> _dados;
+
+  EvolucoesNotifierComDados(this._dados);
+
+  @override
+  List<Evolucao> build() => _dados;
 }
 
 Paciente _pacienteAtivo(String id, String nome) => Paciente(
@@ -38,11 +48,15 @@ Paciente _pacienteArquivado(String id, String nome) => Paciente(
 Widget _criarApp(
   List<Paciente> pacientes, {
   void Function(Paciente)? onAbrir,
+  List<Evolucao> evolucoes = const [],
 }) {
   return ProviderScope(
     overrides: [
       provedorListaPacientes.overrideWith(
         () => PacientesNotifierComDados(pacientes),
+      ),
+      provedorListaEvolucoes.overrideWith(
+        () => EvolucoesNotifierComDados(evolucoes),
       ),
     ],
     child: MaterialApp(
@@ -228,6 +242,22 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(aberto, joao);
+    });
+
+    testWidgets('botão Evoluções abre o histórico geral de evoluções', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _criarApp([_pacienteAtivo('P001', 'João Ativo')]),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Evoluções'), findsOneWidget);
+      await tester.tap(find.text('Evoluções'));
+      await tester.pumpAndSettle();
+
+      // Tela de histórico geral aberta (sem evoluções → estado vazio)
+      expect(find.text('Nenhuma evolução registrada ainda.'), findsOneWidget);
     });
   });
 }

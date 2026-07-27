@@ -71,8 +71,10 @@ GoogleService-Info.local.plist
 /documentacao/chaves.md
 
 # Android Firebase config (contém credenciais)
-android/app/google-services.json
-google-services.json
+# O glob cobre também os backups feitos ao trocar de pacote
+# (ex.: google-services.json.bak-fisio_care).
+android/app/google-services.json*
+google-services.json*
 
 # npm / Mobilewright artifacts
 node_modules/

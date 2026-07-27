@@ -5,19 +5,19 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'componentes/design_system.dart';
 import 'componentes/rodape_versao.dart';
-import 'telas/tela_login.dart';
+import 'telas/tela_splash.dart';
 
 void main() {
-  runApp(const ProviderScope(child: FisioHomeCareApp()));
+  runApp(const ProviderScope(child: AltaApp()));
 }
 
-class FisioHomeCareApp extends StatelessWidget {
-  const FisioHomeCareApp({super.key});
+class AltaApp extends StatelessWidget {
+  const AltaApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Fisio Home Care',
+      title: 'Alta',
       debugShowCheckedModeBanner: false,
       locale: const Locale('pt', 'BR'),
       supportedLocales: const [Locale('pt', 'BR'), Locale('en', 'US')],
@@ -167,7 +167,7 @@ class FisioHomeCareApp extends StatelessWidget {
       ),
       builder: (context, child) =>
           VersaoOverlay(child: child ?? const SizedBox.shrink()),
-      home: const TelaLogin(),
+      home: const TelaSplash(),
     );
   }
 }

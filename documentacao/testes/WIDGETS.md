@@ -1,17 +1,47 @@
-# 🎨 Testes de Widget (161 testes)
+# 🎨 Testes de Widget (170 testes)
 
 Testes de componentes visuais: telas, componentes reutilizáveis e utilitários
 de UI, interação do usuário e estados visuais.
 
 ---
 
-## test/widgets/telas/ (137 testes | 12 arquivos)
+## test/widgets/telas/ (149 testes | 13 arquivos)
 
 Cada arquivo de teste representa uma tela da aplicação.
 
 ---
 
-### tela_dashboard_test.dart (13 testes)
+### tela_splash_test.dart (7 testes)
+
+**Tela:** Abertura animada (`TelaSplash`) — gradiente da marca, logotipo,
+traçado de ECG e handoff para o login.
+
+```dart
+// Conteúdo da marca
+✓ mostra logotipo, título e subtítulo da marca
+✓ desenha o traçado de ECG durante a abertura
+
+// Navegação
+✓ não navega antes de terminar a animação
+✓ vai para o destino ao fim da animação
+✓ substitui a rota: não dá para voltar para a splash
+
+// Acessibilidade e ciclo de vida
+✓ com "reduzir movimento" pula direto para o destino
+✓ descartar a tela no meio da animação não quebra
+```
+
+**Notas:**
+- O destino é injetável (`construirDestino`), então os testes não precisam
+  montar autenticação nem o SDK do Google.
+- Os elementos animados têm chaves estáveis (`splash_logotipo`, `splash_ecg`)
+  porque a aparência é feita em `CustomPainter` — não há widget de texto ou
+  ícone para localizar o traçado.
+- `MediaQuery(disableAnimations: true)` reproduz "reduzir movimento" do sistema.
+
+---
+
+### tela_dashboard_test.dart (14 testes)
 
 **Tela:** Início (home após login) — cabeçalho, stat tiles, agenda do dia,
 pendências, navegação inferior e FAB.
@@ -481,12 +511,13 @@ flutter test test/widgets/telas/tela_pacientes_test.dart
 
 | Tela | Status | Testes | Observação |
 |---|---|---|---|
-| Login | ✅ | 6 | Termos LGPD, login Google |
-| Dashboard | ✅ | 13 | — |
+| Splash | ✅ | 7 | Abertura animada + handoff para o login |
+| Login | ✅ | 9 | Termos LGPD, login Google, navegação única |
+| Dashboard | ✅ | 14 | — |
 | Cadastro Paciente | ✅ | 23 | — |
 | Editar Paciente | ✅ | 6 | Campos travados + atualização |
 | Editar Sessão | ✅ | 7 | Campos travados + atualização |
-| Lista Pacientes | ✅ | 11 | — |
+| Lista Pacientes | ✅ | 12 | — |
 | Nova Sessão | ✅ | 9 | — |
 | Registro Evolução | ✅ | 23 | inclui timeline e ditado por voz |
 | Sessões/Agenda | ✅ | 10 | — |
@@ -496,4 +527,4 @@ flutter test test/widgets/telas/tela_pacientes_test.dart
 | Modal Detalhes Paciente | ✅ | 12 | — |
 | Rodapé Versão | ✅ | 3 | Overlay de versão |
 | Ações de Agendamento | ✅ | 6 | — |
-| **Total** | **✅** | **161** | Telas principais + componentes/utilitários |
+| **Total** | **✅** | **170** | Telas principais + componentes/utilitários |

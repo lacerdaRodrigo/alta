@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Camada de fundo do ícone adaptativo: gradiente violeta da marca,
+     o mesmo de FisioGradients.header e da splash nativa. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="315"
+        android:startColor="@color/fisio_primary_light"
+        android:centerColor="@color/fisio_primary"
+        android:endColor="@color/fisio_primary_dark"
+        android:type="linear" />
+</shape>

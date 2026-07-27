@@ -1,10 +1,31 @@
-# 📁 Testes Unitários (116 testes)
+# 📁 Testes Unitários (123 testes)
 
 Lógica pura: validação de entrada, transformação de dados, cálculos.
 
 ---
 
-## test/unitarios/utilitarios/ (86 testes)
+## test/unitarios/utilitarios/ (93 testes)
+
+### mensagens_erro_google_test.dart (7 testes)
+
+Tradução de erros do Google Sign-In para mensagens acionáveis na UI.
+
+```dart
+✓ cancelamento explícito do serviço vira mensagem curta
+✓ cancelamento do plugin vira mensagem curta
+✓ app não registrado no OAuth não é tratado como cancelamento
+✓ erro 10 aponta para o cliente OAuth, não para o Firebase
+✓ erro 12500 orienta configurar o provedor Google
+✓ permissão negada orienta a lista de usuários de teste
+✓ erro desconhecido cai na mensagem genérica
+```
+
+**Por que existe:** o plugin classifica como `canceled` tanto a desistência do
+usuário quanto o erro `[16] Account reauth failed`, que na verdade é o par
+pacote + SHA-1 não registrado como cliente OAuth Android. Sem separar os dois, um
+erro de configuração aparece como se o usuário tivesse fechado o login.
+
+---
 
 ### validadores_test.dart (46 testes)
 

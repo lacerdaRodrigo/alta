@@ -25,9 +25,9 @@ Esta tela é a porta de entrada do aplicativo, responsável pela autenticação 
 * **Tratamento de Exceções:** Exibição de mensagens de erro amigáveis caso ocorram falhas na autenticação[cite: 2].
 
 ## 2. Termo de Consentimento, Uso e Privacidade (LGPD)
-> **Termo de Uso e Política de Privacidade - Licença de Uso do Aplicativo "Fisio Home Care"**
+> **Termo de Uso e Política de Privacidade - Licença de Uso do Aplicativo "Alta"**
 >
-> **1. Escopo e Objeto:** O "Fisio Home Care" é um aplicativo cliente que atua como ferramenta de gestão clínica e operacional. Este termo regula a relação entre a plataforma ("Fisio Home Care") e o fisioterapeuta ("Usuário Profissional"), visando à conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/18).
+> **1. Escopo e Objeto:** O "Alta" é um aplicativo cliente que atua como ferramenta de gestão clínica e operacional. Este termo regula a relação entre a plataforma ("Alta") e o fisioterapeuta ("Usuário Profissional"), visando à conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/18).
 >
 > **2. Soberania e Armazenamento dos Dados:**
 > * **Sem Servidor Central:** O aplicativo opera sob o modelo de soberania local do usuário. Nenhum dado de paciente ou evolução clínica é armazenado ou processado em servidores de terceiros ou sob controle da equipe de desenvolvimento do aplicativo.

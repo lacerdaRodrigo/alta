@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fisio_home_care/modelos/paciente.dart';
+import 'package:alta/modelos/paciente.dart';
 
 void main() {
   group('Paciente', () {

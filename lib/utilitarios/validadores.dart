@@ -1,7 +1,7 @@
 import 'utilitarios_data.dart';
 import 'validador_cpf.dart';
 
-/// Validadores de entrada de dados para o aplicativo Fisio Home Care.
+/// Validadores de entrada de dados para o aplicativo Alta.
 ///
 /// Esta classe fornece métodos estáticos para validar dados de pacientes
 /// como CPF, telefone, data de nascimento, endereço e nome.
@@ -12,7 +12,7 @@ import 'validador_cpf.dart';
 ///
 /// **Exemplo de uso:**
 /// ```dart
-/// import 'package:fisio_home_care/utilitarios/validadores.dart';
+/// import 'package:alta/utilitarios/validadores.dart';
 ///
 /// if (!Validadores.validarCPF('123.456.789-09')) {
 ///   print('CPF inválido!');

@@ -290,7 +290,7 @@ class _TelaConfiguracoesState extends ConsumerState<TelaConfiguracoes> {
                   ),
                   const SizedBox(height: 20),
                   const Center(
-                    child: Text('Fisio Home Care',
+                    child: Text('Alta',
                         style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,

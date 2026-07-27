@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fisio_home_care/componentes/modal_detalhes_paciente.dart';
-import 'package:fisio_home_care/modelos/paciente.dart';
-import 'package:fisio_home_care/modelos/evolucao.dart';
-import 'package:fisio_home_care/provedores/provedores_dados.dart';
-import 'package:fisio_home_care/servicos/servico_repositorio_dados.dart';
+import 'package:alta/componentes/modal_detalhes_paciente.dart';
+import 'package:alta/modelos/paciente.dart';
+import 'package:alta/modelos/evolucao.dart';
+import 'package:alta/provedores/provedores_dados.dart';
+import 'package:alta/servicos/servico_repositorio_dados.dart';
 
 class FakeRepoModal extends Fake implements RepositorioDadosGoogle {
   @override

@@ -27,6 +27,11 @@ test: ## Roda todos os testes Flutter
 lint: ## Roda análise estática (flutter analyze)
 	flutter analyze
 
+icones: ## Regera o ícone do app em todas as plataformas (Android, web, iOS, macOS, Windows)
+	flutter test tool/gerar_icones.dart
+	python3 tool/finalizar_icones.py
+	@echo "Ícones regerados. Confira o diff antes de commitar."
+
 # ---------------------------------------------------------------------------
 # CI/CD — fluxo via GitHub Actions (auxiliares -> develop -> master)
 # ---------------------------------------------------------------------------
@@ -63,14 +68,8 @@ maestro-test: maestro-check ## Roda smoke E2E Maestro (.maestro/flows/smoke_app_
 test-e2e: ## Roda testes E2E com Patrol (Android device necessário)
 	patrol test -d android
 
-check-android-oauth: ## Verifica se google-services.json tem cliente OAuth Android
-	@if grep -q '"client_type": 1' android/app/google-services.json; then \
-		echo "OK: cliente OAuth Android (client_type 1) encontrado."; \
-	else \
-		echo "ERRO: google-services.json sem cliente OAuth Android (client_type 1)."; \
-		echo "Siga documentacao/chaves.md → seção Login Android."; \
-		exit 1; \
-	fi
+check-android-oauth: ## Verifica se google-services.json cobre o applicationId atual
+	@python3 tool/verificar_oauth_android.py
 
 dev-android: ## Roda local no celular/device Android conectado
 	flutter pub get
@@ -89,12 +88,17 @@ prod-web: ## Compila e publica a Web em produção no Firebase Hosting
 	@echo "1/5 Atualizando dependências Flutter..."
 	flutter pub get && \
 	V=$$(grep '^version: ' pubspec.yaml | sed 's/version: //' | cut -d'+' -f1) && \
-	MAJOR=$$(echo $$V | cut -d'.' -f1) && \
-	MINOR=$$(echo $$V | cut -d'.' -f2) && \
-	PATCH=$$(echo $$V | cut -d'.' -f3) && \
-	NEW_PATCH=$$((PATCH + 1)) && \
-	NEW_VER="$$MAJOR.$$MINOR.$$NEW_PATCH" && \
-	NEW_FULL="$$MAJOR.$$MINOR.$$NEW_PATCH+0" && \
+	V_PUBLICADA=$$(grep '"version"' web/version.json | sed 's/.*: *"//; s/".*//') && \
+	MAIOR=$$(printf '%s\n%s\n' "$$V" "$$V_PUBLICADA" | sort -V | tail -1) && \
+	if [ "$$V" != "$$V_PUBLICADA" ] && [ "$$MAIOR" = "$$V" ]; then \
+		NEW_VER="$$V"; \
+	else \
+		MAJOR=$$(echo $$V | cut -d'.' -f1); \
+		MINOR=$$(echo $$V | cut -d'.' -f2); \
+		PATCH=$$(echo $$V | cut -d'.' -f3); \
+		NEW_VER="$$MAJOR.$$MINOR.$$((PATCH + 1))"; \
+	fi && \
+	NEW_FULL="$$NEW_VER+0" && \
 	sed -i "s/^version: .*/version: $$NEW_FULL/" pubspec.yaml && \
 	sed -i "s/\"version\": \".*\"/\"version\": \"$$NEW_VER\"/" web/version.json && \
 	BUILD_TS=$$(date +%s) && \
