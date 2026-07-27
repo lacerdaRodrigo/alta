@@ -12,7 +12,7 @@
 ///
 /// **Exemplo de uso:**
 /// ```dart
-/// import 'package:fisio_home_care/servicos/versao_esquema.dart';
+/// import 'package:alta/servicos/versao_esquema.dart';
 ///
 /// // Validar versão
 /// final resultado = VersaoEsquema.validar(1);

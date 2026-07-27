@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fisio_home_care/utilitarios/utilitarios_data.dart';
+import 'package:alta/utilitarios/utilitarios_data.dart';
 
 void main() {
   group('UtilitariosData', () {

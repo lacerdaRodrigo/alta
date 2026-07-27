@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../modelos/agendamento.dart';
 import '../componentes/design_system.dart';
+import '../componentes/modal_detalhes_paciente.dart';
 import '../provedores/provedores_dados.dart';
 import '../utilitarios/utilitarios_data.dart';
 import '../utilitarios/acoes_agendamento.dart';
 import 'tela_cadastro_paciente.dart';
 import 'tela_nova_sessao.dart';
-import 'tela_historico_geral_evolucoes.dart';
 import 'tela_pacientes.dart';
 import 'tela_sessoes.dart';
 import 'tela_configuracoes.dart';
@@ -85,7 +85,9 @@ class _TelaDashboardState extends ConsumerState<TelaDashboard> {
         onAbrir: (a) => _abrirAcoesAgendamento(context, a),
       );
     } else if (_indiceSelecionado == 2) {
-      corpo = const TelaPacientes();
+      corpo = TelaPacientes(
+        onAbrir: (p) => mostrarModalDetalhesPaciente(context, p),
+      );
     } else {
       corpo = const TelaFinanceiro();
     }
@@ -273,41 +275,6 @@ class _HomeTab extends ConsumerWidget {
                       else
                         ...doDia.map((s) => _linhaAgenda(
                             s, mapaPacientes[s.idPaciente] ?? 'Paciente')),
-                      const SizedBox(height: 16),
-                      GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) =>
-                                  const TelaHistoricoGeralEvolucoes()),
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 13, horizontal: 18),
-                          decoration: BoxDecoration(
-                            color: FisioCores.card,
-                            borderRadius: BorderRadius.circular(16),
-                            border:
-                                Border.all(color: const Color(0xFFEEF2F5)),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(Icons.history_rounded,
-                                  size: 18, color: FisioCores.primary),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: Text('Histórico de evoluções',
-                                    style: TextStyle(
-                                        fontSize: 13.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: FisioCores.textPrimary)),
-                              ),
-                              Icon(Icons.chevron_right_rounded,
-                                  size: 18, color: Color(0xFFCBD5E1)),
-                            ],
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),

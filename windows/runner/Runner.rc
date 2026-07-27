@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.rodrigo.fisio" "\0"
-            VALUE "FileDescription", "fisio_home_care" "\0"
+            VALUE "FileDescription", "Alta" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "fisio_home_care" "\0"
+            VALUE "InternalName", "Alta" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.rodrigo.fisio. All rights reserved." "\0"
-            VALUE "OriginalFilename", "fisio_home_care.exe" "\0"
-            VALUE "ProductName", "fisio_home_care" "\0"
+            VALUE "OriginalFilename", "alta.exe" "\0"
+            VALUE "ProductName", "Alta" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

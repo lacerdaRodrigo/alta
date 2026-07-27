@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fisio_home_care/utilitarios/gerador_id.dart';
+import 'package:alta/utilitarios/gerador_id.dart';
 
 void main() {
   group('GeradorId.proximo', () {

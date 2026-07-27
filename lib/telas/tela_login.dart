@@ -113,13 +113,15 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
                     ),
                   ),
                   const SizedBox(height: 22),
+                  // Mesma métrica de `TelaSplash`: o cross-fade da abertura só
+                  // fica invisível se o logotipo cair no mesmo lugar e tamanho.
                   const Text(
-                    'Fisio Home Care',
+                    'Alta',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 44,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
-                      letterSpacing: -0.6,
+                      letterSpacing: -1.5,
                     ),
                   ),
                   const SizedBox(height: 6),

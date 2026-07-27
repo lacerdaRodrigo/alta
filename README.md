@@ -1,4 +1,4 @@
-# Fisio Home Care
+# Alta
 
 Aplicativo de Fisioterapia Domiciliar desenvolvido em Flutter, com arquitetura Serverless baseada no Google Sheets API (BYODB - Bring Your Own Database) e 100% aderente à LGPD.
 
@@ -37,6 +37,20 @@ Toda a documentação técnica, de segurança e de arquitetura do sistema foi mo
 2. Verifique se o device aparece: `flutter devices`
 3. Rode no celular: `make dev-android`
 
+> ⚠️ **Pendência aberta após a renomeação para "Alta".** O `applicationId` passou de
+> `com.rodrigo.fisio_care` para `com.rodrigo.alta`, e o `google-services.json` atual
+> ainda descreve o pacote antigo. Enquanto isso, qualquer build Android falha com:
+>
+> ```
+> No matching client found for package name 'com.rodrigo.alta'
+> ```
+>
+> Para destravar: no **Firebase Console** adicione um app Android com o pacote
+> `com.rodrigo.alta` + o SHA-1 abaixo, baixe o `google-services.json` novo para
+> `android/app/`, e no **Google Cloud Console → Credenciais** crie o cliente OAuth
+> Android para o mesmo pacote (sem ele o build passa mas o login falha em execução).
+> Web e testes não são afetados.
+
 O login Google no Android exige o SHA-1 do keystore debug registrado no Firebase (projeto `app-fisio-care-2`). Após adicionar a impressão digital, baixe o novo `google-services.json` e substitua em `android/app/google-services.json`.
 
 Para obter o SHA-1 debug local:
@@ -59,6 +73,13 @@ make prod-web
 ### Android (APK release)
 ```bash
 make prod-android
+```
+
+## Ícone do aplicativo
+O ícone é desenhado em código (`tool/gerar_icones.dart`) e renderizado pelo engine do Flutter em cada tamanho final — Android (legado, redondo, adaptativo e monocromático), web, iOS, macOS e Windows. Não edite os PNGs à mão; ajuste o desenho e regere:
+
+```bash
+make icones
 ```
 
 ## Segurança e LGPD
