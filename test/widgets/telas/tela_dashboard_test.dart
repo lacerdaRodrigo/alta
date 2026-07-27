@@ -2,6 +2,7 @@ import 'package:alta/modelos/agendamento.dart';
 import 'package:alta/modelos/paciente.dart';
 import 'package:alta/provedores/provedor_autenticacao.dart';
 import 'package:alta/provedores/provedores_dados.dart';
+import 'package:alta/componentes/design_system.dart';
 import 'package:alta/telas/tela_configuracoes.dart';
 import 'package:alta/telas/tela_dashboard.dart';
 import 'package:flutter/material.dart';
@@ -360,6 +361,45 @@ void main() {
 
       expect(find.text('2'), findsWidgets); // count in header
       expect(find.text('sessões'), findsOneWidget); // label next to count
+    });
+
+    testWidgets('header apresenta a data antes do contador', (tester) async {
+      await _montar(
+        tester,
+        _criarApp(
+          carregamento: _carregado,
+          pacientes: [_paciente()],
+          agendamentos: [_agendamento(id: 'A001', data: DateTime.now())],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('você tem'), findsOneWidget);
+    });
+
+    testWidgets('cards não cobrem o contador de sessões', (tester) async {
+      // Regressão: os stat tiles sobem 38px para flutuar sobre o gradiente. Com
+      // o padding inferior do header menor que isso, eles cortavam o número das
+      // sessões. Um finder de texto não pega esse bug — a asserção é geométrica.
+      await _montar(
+        tester,
+        _criarApp(
+          carregamento: _carregado,
+          pacientes: [_paciente()],
+          agendamentos: [_agendamento(id: 'A001', data: DateTime.now())],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final fimDoContador = tester.getBottomLeft(find.text('sessão')).dy;
+      final topoDoCard =
+          tester.getTopLeft(find.byType(FisioStatTile).first).dy;
+
+      expect(
+        topoDoCard,
+        greaterThan(fimDoContador),
+        reason: 'os stat tiles estão sobrepondo o contador de sessões do dia',
+      );
     });
 
     testWidgets('pendências são contabilizadas no stat tile', (tester) async {

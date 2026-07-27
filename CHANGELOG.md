@@ -1,11 +1,19 @@
 # Changelog — Alta
 
-## [1.1.0] — 2026-07-26
+## [Não lançado]
 
-> Versão *minor*: o conjunto traz features (ícone próprio, splash de abertura,
-> histórico de evoluções na tela Pacientes), não só correções. O bump foi feito
-> à mão em `pubspec.yaml`/`web/version.json`; o deploy de produção respeita esse
-> valor em vez de incrementar o patch.
+### Correções
+- **Os cards do topo cortavam o contador de sessões na tela Início.** Em `tela_dashboard.dart`, os stat tiles ("Pacientes ativos" / "Pendências") sobem 38px (`Transform.translate`) para flutuar sobre o gradiente, mas o `FisioGradientHeader` reservava só 30px de padding inferior. Como `30 - 38 = -8`, eles invadiam 8px do número do dia, que tem 44px de altura — o "1" aparecia cortado ao meio no aparelho. Padding inferior passou a **64** (38 do deslocamento + 26 de folga), o mesmo respiro que a `TelaFinanceiro` já usava com seu par 78/-52.
+  - Novo teste de regressão **geométrico** em `tela_dashboard_test.dart`: compara `getTopLeft` do primeiro `FisioStatTile` com `getBottomLeft` do texto "sessão". Um finder de texto não detecta sobreposição — o teste antigo passava com o bug na tela. Verificado que ele falha com o padding antigo (topo do card em 170.0 contra fim do texto em 175.63).
+- **Frase do header reescrita:** `Você tem hoje, 26 de julho` deixava a vírgula pendurada, porque o complemento ("1 sessão") vem numa linha separada e em corpo muito maior. Agora lê `Hoje, 26 de julho, você tem` seguido do número — a frase fecha em si. Total **295 testes**.
+
+## [1.1.1] — 2026-07-26
+
+> Versão *minor* planejada como 1.1.0, publicada como **1.1.1**: `pubspec.yaml` e
+> `web/version.json` foram para produção com o mesmo valor, e o workflow trata
+> igualdade entre os dois como "essa versão já saiu" e incrementa o patch. Para
+> um bump manual valer, o `web/version.json` precisa ficar na versão anterior e
+> deixar o deploy escrevê-lo.
 
 
 ### Marca

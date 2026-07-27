@@ -163,7 +163,11 @@ class _HomeTab extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               FisioGradientHeader(
-                padding: const EdgeInsets.fromLTRB(20, 52, 20, 30),
+                // O padding de baixo precisa cobrir os 38px que os cards sobem
+                // (`Transform.translate` logo abaixo) mais a folga desejada —
+                // 38 + 26, mesmo respiro da `TelaFinanceiro`. Mexer num número
+                // sem o outro faz os cards cortarem o contador de sessões.
+                padding: const EdgeInsets.fromLTRB(20, 52, 20, 64),
                 eyebrow: saudacao,
                 titulo: nomeUsuario,
                 trailing: GestureDetector(
@@ -189,7 +193,7 @@ class _HomeTab extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Você tem hoje, ${UtilitariosData.formatarDataExtensa(hoje)}',
+                      'Hoje, ${UtilitariosData.formatarDataExtensa(hoje)}, você tem',
                       style: TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w600,

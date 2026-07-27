@@ -1,11 +1,11 @@
-# 🎨 Testes de Widget (170 testes)
+# 🎨 Testes de Widget (172 testes)
 
 Testes de componentes visuais: telas, componentes reutilizáveis e utilitários
 de UI, interação do usuário e estados visuais.
 
 ---
 
-## test/widgets/telas/ (149 testes | 13 arquivos)
+## test/widgets/telas/ (151 testes | 13 arquivos)
 
 Cada arquivo de teste representa uma tela da aplicação.
 
@@ -41,7 +41,7 @@ traçado de ECG e handoff para o login.
 
 ---
 
-### tela_dashboard_test.dart (14 testes)
+### tela_dashboard_test.dart (16 testes)
 
 **Tela:** Início (home após login) — cabeçalho, stat tiles, agenda do dia,
 pendências, navegação inferior e FAB.
@@ -67,11 +67,22 @@ pendências, navegação inferior e FAB.
 ✓ Lista sessões de hoje na agenda
 ✓ Contador de sessões do dia exibido no header
 ✓ Pendências são contabilizadas no stat tile
+
+// Layout do header
+✓ Header apresenta a data antes do contador
+✓ Cards não cobrem o contador de sessões
 ```
 
 > Usa notifiers de teste (`CarregamentoComEstado`, `PacientesComDados`,
 > `AgendamentosComDados`) para injetar o estado "carregado" e evitar a chamada
 > real ao Google Sheets disparada no `initState`.
+>
+> **"Cards não cobrem o contador" é geométrico, não textual.** Os stat tiles
+> sobem 38px (`Transform.translate`) para flutuar sobre o gradiente; quando o
+> padding inferior do `FisioGradientHeader` era menor que isso, eles cortavam o
+> número do dia — e nenhum teste percebia, porque o texto continuava na árvore.
+> A asserção compara `getTopLeft` do primeiro `FisioStatTile` com
+> `getBottomLeft` do texto "sessão".
 
 ---
 
@@ -513,7 +524,7 @@ flutter test test/widgets/telas/tela_pacientes_test.dart
 |---|---|---|---|
 | Splash | ✅ | 7 | Abertura animada + handoff para o login |
 | Login | ✅ | 9 | Termos LGPD, login Google, navegação única |
-| Dashboard | ✅ | 14 | — |
+| Dashboard | ✅ | 16 | folga entre header e stat tiles coberta por teste geométrico |
 | Cadastro Paciente | ✅ | 23 | — |
 | Editar Paciente | ✅ | 6 | Campos travados + atualização |
 | Editar Sessão | ✅ | 7 | Campos travados + atualização |
@@ -527,4 +538,4 @@ flutter test test/widgets/telas/tela_pacientes_test.dart
 | Modal Detalhes Paciente | ✅ | 12 | — |
 | Rodapé Versão | ✅ | 3 | Overlay de versão |
 | Ações de Agendamento | ✅ | 6 | — |
-| **Total** | **✅** | **170** | Telas principais + componentes/utilitários |
+| **Total** | **✅** | **172** | Telas principais + componentes/utilitários |

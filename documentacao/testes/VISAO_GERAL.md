@@ -1,6 +1,6 @@
 # 📋 Testes Automatizados — Visão Geral
 
-**Status:** ✅ 293 testes passando
+**Status:** ✅ 295 testes passando
 
 ---
 
@@ -13,9 +13,9 @@ O projeto utiliza **apenas testes unitários e de widget** (sem E2E automatizado
 | **Unit — Utilitários** | 93 | 32% | Validadores, formatadores, gerador de IDs |
 | **Unit — Modelos** | 25 | 9% | Serialização, transformação, cópia |
 | **Unit — Serviços** | 5 | 2% | Preferências (SharedPreferences) |
-| **Widget — Telas** | 149 | 52% | UI, interação, estados visuais |
+| **Widget — Telas** | 151 | 51% | UI, interação, estados visuais |
 | **Widget — Componentes/Utilitários** | 21 | 7% | Modal de detalhes, rodapé versão, ações de agendamento |
-| **TOTAL** | **293** | **100%** | — |
+| **TOTAL** | **295** | **100%** | — |
 
 ---
 
@@ -37,7 +37,7 @@ test/
 │       ├── validador_cpf_test.dart      (9 testes)
 │       ├── validadores_test.dart        (46 testes)
 │       └── gerador_id_test.dart         (8 testes)
-└── widgets/                (170 testes — UI + componentes)
+└── widgets/                (172 testes — UI + componentes)
     ├── componentes/
     │   ├── modal_detalhes_paciente_test.dart   (12 testes)
     │   └── rodape_versao_test.dart             (3 testes)
@@ -46,7 +46,7 @@ test/
     └── telas/
         ├── tela_splash_test.dart              (7 testes — abertura animada)
         ├── tela_login_test.dart               (9 testes)
-        ├── tela_dashboard_test.dart           (14 testes)
+        ├── tela_dashboard_test.dart           (16 testes)
         ├── tela_cadastro_paciente_test.dart  (23 testes)
         ├── tela_editar_paciente_test.dart    (6 testes — campos travados + atualização)
         ├── tela_editar_sessao_test.dart      (7 testes — editar/reagendar sessão)
@@ -64,7 +64,7 @@ test/
 ## Como Rodar
 
 ```bash
-# Todos os 293 testes
+# Todos os 295 testes
 flutter test
 
 # Apenas unitários
