@@ -451,13 +451,17 @@ Pipeline em `.github/workflows/` com fluxo de duas branches (`develop` → `mast
 | Workflow | Dispara em | O que faz |
 |---|---|---|
 | `deploy-preview.yml` | push em `develop` | Lint + testes + build web → deploy em **preview channel** do Firebase (URL temporária, ambiente de testes). |
-| `deploy-prod.yml` | push em `master` | Lint + testes → incrementa versão (patch em `pubspec.yaml` + `web/version.json`) → build → deploy **live** no Firebase → commita o bump com `[skip ci]`. |
+| `deploy-prod.yml` | push em `master` | Lint + testes → define a versão (patch +1, ou respeita bump manual do `pubspec.yaml`) → build → deploy **live** no Firebase → commita o bump com `[skip ci]`. |
 
 > Não há workflow de CI separado: a verificação (lint + testes) está embutida nos dois deploys, então código quebrado nunca é publicado. Rode `make ci-local` para verificar localmente antes de subir.
 
 - **Flutter pinado** em `3.44.1` (via `subosito/flutter-action@v2`).
 - **Auth Firebase:** Service Account JSON em `FirebaseExtended/action-hosting-deploy@v0`.
 - A lógica de bump de versão e cópia de branding replica o target `prod-web` do `Makefile`.
+- **Versão:** `pubspec.yaml` = versão do código, `web/version.json` = última
+  publicada. Iguais → patch +1 automático; `pubspec.yaml` à frente (bump manual
+  de minor/major) → publica exatamente esse número. Ao subir uma minor, edite só
+  o `pubspec.yaml`; `web/version.json` é escrito pelo deploy.
 
 ### Secrets necessários (GitHub → Settings → Secrets and variables → Actions)
 
@@ -538,6 +542,6 @@ Para questões sobre estrutura, padrões ou decisões técnicas, **SEMPRE consul
 
 ---
 
-**Última atualização:** 2026-07-23  
-**Versão:** 1.0.18 (produção)  
-**Branches:** master, develop, migracao-google-sign-in-7
+**Última atualização:** 2026-07-26  
+**Versão:** 1.0.18 (produção) — 1.1.0 pendente de deploy  
+**Branches:** master, develop, identidade-visual

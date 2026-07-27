@@ -94,12 +94,17 @@ prod-web: ## Compila e publica a Web em produção no Firebase Hosting
 	@echo "1/5 Atualizando dependências Flutter..."
 	flutter pub get && \
 	V=$$(grep '^version: ' pubspec.yaml | sed 's/version: //' | cut -d'+' -f1) && \
-	MAJOR=$$(echo $$V | cut -d'.' -f1) && \
-	MINOR=$$(echo $$V | cut -d'.' -f2) && \
-	PATCH=$$(echo $$V | cut -d'.' -f3) && \
-	NEW_PATCH=$$((PATCH + 1)) && \
-	NEW_VER="$$MAJOR.$$MINOR.$$NEW_PATCH" && \
-	NEW_FULL="$$MAJOR.$$MINOR.$$NEW_PATCH+0" && \
+	V_PUBLICADA=$$(grep '"version"' web/version.json | sed 's/.*: *"//; s/".*//') && \
+	MAIOR=$$(printf '%s\n%s\n' "$$V" "$$V_PUBLICADA" | sort -V | tail -1) && \
+	if [ "$$V" != "$$V_PUBLICADA" ] && [ "$$MAIOR" = "$$V" ]; then \
+		NEW_VER="$$V"; \
+	else \
+		MAJOR=$$(echo $$V | cut -d'.' -f1); \
+		MINOR=$$(echo $$V | cut -d'.' -f2); \
+		PATCH=$$(echo $$V | cut -d'.' -f3); \
+		NEW_VER="$$MAJOR.$$MINOR.$$((PATCH + 1))"; \
+	fi && \
+	NEW_FULL="$$NEW_VER+0" && \
 	sed -i "s/^version: .*/version: $$NEW_FULL/" pubspec.yaml && \
 	sed -i "s/\"version\": \".*\"/\"version\": \"$$NEW_VER\"/" web/version.json && \
 	BUILD_TS=$$(date +%s) && \

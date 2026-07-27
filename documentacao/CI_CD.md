@@ -49,6 +49,19 @@ Detalhes técnicos:
 - Cópia das páginas públicas (`branding/*.html`) e bump de versão replicam o
   antigo `make prod-web`.
 
+### Como o número da versão é decidido
+
+`pubspec.yaml` guarda a versão **do código**; `web/version.json` guarda a
+**última versão publicada**. No deploy de produção:
+
+- Se as duas são iguais → patch +1 (comportamento padrão, automático).
+- Se o `pubspec.yaml` está **à frente** (bump manual de *minor*/*major*, ex.:
+  `1.0.18` → `1.1.0`) → o deploy publica exatamente essa versão, sem incrementar.
+
+Ou seja, para lançar uma *minor*, edite só o `pubspec.yaml` e **não mexa** em
+`web/version.json` — quem o atualiza é o deploy. A mesma regra vale em
+`make prod-web`, para o deploy local não divergir do CI.
+
 ---
 
 ## Segredos (Secrets) necessários no GitHub

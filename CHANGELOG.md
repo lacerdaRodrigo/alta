@@ -1,6 +1,12 @@
 # Changelog — Fisio Home Care
 
-## [Não lançado] — 2026-07-01
+## [1.1.0] — 2026-07-26
+
+> Versão *minor*: o conjunto traz features (ícone próprio, splash de abertura,
+> histórico de evoluções na tela Pacientes), não só correções. O bump foi feito
+> à mão em `pubspec.yaml`/`web/version.json`; o deploy de produção respeita esse
+> valor em vez de incrementar o patch.
+
 
 ### Design
 - **Ícone do aplicativo próprio (adeus logo padrão do Flutter):** marca nova — coração (mesmo símbolo da `TelaLogin`/`TelaSplash`) atravessado por um pulso de eletrocardiograma **em espaço negativo**, sobre o gradiente violeta. A linha do pulso fica abaixo do meio do coração e o spike costura as duas metades, então a silhueta continua lendo como coração mesmo a 20px.
