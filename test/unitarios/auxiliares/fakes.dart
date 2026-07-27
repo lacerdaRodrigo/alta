@@ -1,4 +1,4 @@
-import 'package:fisio_home_care/servicos/servico_autenticacao_google.dart';
+import 'package:alta/servicos/servico_autenticacao_google.dart';
 
 /// Fake compartilhado para testes que precisam de autenticação Google.
 class ServicoAutenticacaoGoogleFake implements ServicoAutenticacaoGoogle {

@@ -1,9 +1,9 @@
-import 'package:fisio_home_care/modelos/agendamento.dart';
-import 'package:fisio_home_care/modelos/paciente.dart';
-import 'package:fisio_home_care/provedores/provedor_autenticacao.dart';
-import 'package:fisio_home_care/provedores/provedores_dados.dart';
-import 'package:fisio_home_care/telas/tela_configuracoes.dart';
-import 'package:fisio_home_care/telas/tela_dashboard.dart';
+import 'package:alta/modelos/agendamento.dart';
+import 'package:alta/modelos/paciente.dart';
+import 'package:alta/provedores/provedor_autenticacao.dart';
+import 'package:alta/provedores/provedores_dados.dart';
+import 'package:alta/telas/tela_configuracoes.dart';
+import 'package:alta/telas/tela_dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

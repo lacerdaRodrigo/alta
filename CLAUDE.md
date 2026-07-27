@@ -1,4 +1,4 @@
-# Fisio Home Care — Contexto Completo para Claude
+# Alta — Contexto Completo para Claude
 
 > ⚠️ **IMPORTANTE:** Este arquivo deve ser **SEMPRE ATUALIZADO** quando o projeto muda. Além disso, **testes e documentação DEVEM ser mantidos atualizados** em paralelo com o código.
 
@@ -6,7 +6,7 @@
 
 ## O que é este projeto
 
-**Fisio Home Care** é um aplicativo mobile + web de Fisioterapia Domiciliar desenvolvido em Flutter.
+**Alta** é um aplicativo mobile + web de Fisioterapia Domiciliar desenvolvido em Flutter.
 
 ### Características principais
 - **Backend:** Serverless via Google Sheets API (modelo BYODB — o fisioterapeuta conecta sua própria conta Google)
@@ -14,6 +14,25 @@
 - **Hospedagem web:** Firebase Hosting
 - **Conformidade:** LGPD (dados nunca saem da conta Google do profissional)
 - **Sem servidor central:** Não há prontuário centralizado de terceiros
+
+### Marca (renomeado em 2026-07-26)
+
+O produto se chamava `Fisio Home Care` / `FisioCare` / `fisio_home_care` — três
+nomes ao mesmo tempo, com `fisiocare.com.br` já pertencendo a terceiro. Passou a
+ser **Alta**: o desfecho de todo tratamento fisioterapêutico ("dar alta"), nome
+que promete o resultado em vez de descrever a categoria.
+
+| Onde | Valor |
+|---|---|
+| Marca / label do launcher / telas | `Alta` |
+| Listagem, `<title>`, `manifest.name` | `Alta — Fisioterapia Domiciliar` (a palavra-chave vive aqui, não na marca) |
+| `applicationId` / namespace Android | `com.rodrigo.alta` |
+| Pacote Dart (`pubspec.yaml`) | `alta` |
+| Projeto Firebase | `app-fisio-care-2` — **inalterado de propósito** (trocar exigiria refazer secret, origens OAuth e redirect URI) |
+
+⚠️ **`__saas_fisio_db__` não muda nunca.** É o nome pelo qual o app localiza a
+planilha no Drive do usuário (`servico_google_drive.dart`,
+`servico_google_sheets.dart`); renomear faz o app não achar a base de quem já usa.
 
 ---
 
@@ -88,7 +107,7 @@ fisio-home-care/
 │       └── mensagens_erro_google.dart    # Mapear erros Google
 │
 ├── test/
-│   ├── unitarios/                   # 116 testes — lógica pura
+│   ├── unitarios/                   # 123 testes — lógica pura
 │   │   ├── auxiliares/
 │   │   │   └── fakes.dart           # Mocks reutilizados
 │   │   ├── modelos/
@@ -101,7 +120,8 @@ fisio-home-care/
 │   │       ├── validadores_test.dart        (46 testes)
 │   │       ├── validador_cpf_test.dart      (9 testes)
 │   │       ├── utilitarios_data_test.dart   (23 testes)
-│   │       └── gerador_id_test.dart         (8 testes — 100% cobertura)
+│   │       ├── gerador_id_test.dart         (8 testes — 100% cobertura)
+│   │       └── mensagens_erro_google_test.dart (7 testes — diagnóstico de login)
 │   │
 │   └── widgets/                     # 170 testes — UI + componentes
 │       ├── componentes/
@@ -136,8 +156,8 @@ fisio-home-care/
 │   ├── chaves.md                    # (no .gitignore) — credenciais
 │   └── testes/
 │       ├── README.md                # Índice de testes
-│       ├── VISAO_GERAL.md           # Overview 286 testes
-│       ├── UNITARIOS.md             # Detalhe dos 116 unitários
+│       ├── VISAO_GERAL.md           # Overview 293 testes
+│       ├── UNITARIOS.md             # Detalhe dos 123 unitários
 │       └── WIDGETS.md               # Detalhe dos 170 widgets
 │
 ├── QA/
@@ -145,6 +165,7 @@ fisio-home-care/
 │
 ├── tool/                            # Scripts de build (fora de test/)
 │   ├── gerar_icones.dart            # 🔑 Ícone do app, desenhado em código
+│   ├── verificar_oauth_android.py   # Valida google-services.json vs applicationId
 │   └── finalizar_icones.py          # Alfa do iOS + .ico do Windows (Pillow)
 │
 ├── android/                         # Config Firebase, signing
@@ -265,17 +286,17 @@ Paciente.calcularIdade()   // ✓ delega para UtilitariosData
 
 ---
 
-## Testes (286 testes automatizados)
+## Testes (293 testes automatizados)
 
 ### Estrutura
 
 ```
 test/
-├── unitarios/  (116 testes)
+├── unitarios/  (123 testes)
 │   ├── auxiliares/     — fakes.dart (mocks reutilizados)
 │   ├── modelos/        — 25 testes (serialização, transformação)
 │   ├── servicos/       — 5 testes (preferencias)
-│   └── utilitarios/    — 86 testes (validadores, data, CPF, gerador_id)
+│   └── utilitarios/    — 93 testes (validadores, data, CPF, gerador_id, erros do Google)
 │
 └── widgets/    (170 testes)
     ├── telas/        — 13 telas principais (UI, interação)
@@ -414,6 +435,12 @@ Três peças usam **o mesmo gradiente** (`FisioGradients.header`: `#8A6FF0` →
 | Splash nativa web | `web/index.html` (`#splash-fisio`) | Removida no evento `flutter-first-frame` |
 | Ícone do app | `tool/gerar_icones.dart` | Regerar com `make icones` |
 
+**Wordmark:** "Alta" tem 4 letras, então o título usa `fontSize: 44` /
+`letterSpacing: -1.5` para ter presença ao lado do tile de 74px. `TelaSplash` e
+`TelaLogin` **precisam repetir esses valores** — o cross-fade da abertura só é
+invisível se o logotipo cair no mesmo lugar e tamanho nas duas telas (a splash
+HTML em `web/index.html` acompanha).
+
 ### Ícone: regras que não podem ser quebradas
 
 - **Não edite os PNGs à mão.** Eles são saída de `tool/gerar_icones.dart`; a
@@ -497,7 +524,7 @@ make release-prod  # mescla develop → master → dispara deploy de produção 
 | `documentacao/ESPECIFICACOES_TELAS.md` | Requisitos funcionais das telas | ✅ |
 | `documentacao/SEGURANCA_E_DADOS.md` | LGPD, OAuth, modelo BYODB | ✅ |
 | `documentacao/IMPLEMENTAR.md` | Roadmap priorizado | ✅ |
-| `documentacao/testes/` | 286 testes automatizados | ✅ |
+| `documentacao/testes/` | 293 testes automatizados | ✅ |
 | `documentacao/CI_CD.md` | Pipeline GitHub Actions: fluxo, secrets, uso e troubleshooting | ✅ |
 | `QA/qa.md` | Script QA manual (não é E2E) | ✅ |
 

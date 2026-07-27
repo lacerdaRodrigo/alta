@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:fisio_home_care/componentes/rodape_versao.dart';
+import 'package:alta/componentes/rodape_versao.dart';
 
 void main() {
   group('appVersao', () {

@@ -1,11 +1,11 @@
 {
-    "name": "Fisio Home Care",
-    "short_name": "FisioCare",
+    "name": "Alta — Fisioterapia Domiciliar",
+    "short_name": "Alta",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#4A2FB2",
     "theme_color": "#6C4CE0",
-    "description": "Gestão de atendimentos domiciliares de fisioterapia: agenda, pacientes e evoluções.",
+    "description": "Alta — gestão de atendimentos domiciliares de fisioterapia: agenda, pacientes e evoluções.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fisio_home_care/modelos/paciente.dart';
-import 'package:fisio_home_care/modelos/evolucao.dart';
-import 'package:fisio_home_care/provedores/provedores_dados.dart';
-import 'package:fisio_home_care/telas/tela_pacientes.dart';
+import 'package:alta/modelos/paciente.dart';
+import 'package:alta/modelos/evolucao.dart';
+import 'package:alta/provedores/provedores_dados.dart';
+import 'package:alta/telas/tela_pacientes.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 class PacientesNotifierComDados extends ListaPacientesNotifier {

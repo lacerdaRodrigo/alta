@@ -289,13 +289,15 @@ class _TituloRevelado extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Wordmark de 4 letras: pede corpo maior e tracking apertado para ter
+    // presença. A TelaLogin repete estes valores — o handoff depende disso.
     const texto = Text(
-      'Fisio Home Care',
+      'Alta',
       style: TextStyle(
-        fontSize: 28,
+        fontSize: 44,
         fontWeight: FontWeight.w800,
         color: Colors.white,
-        letterSpacing: -0.6,
+        letterSpacing: -1.5,
       ),
     );
 

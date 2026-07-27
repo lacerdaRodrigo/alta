@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fisio_home_care/modelos/agendamento.dart';
+import 'package:alta/modelos/agendamento.dart';
 
 void main() {
   group('Agendamento', () {

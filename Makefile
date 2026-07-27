@@ -68,14 +68,8 @@ maestro-test: maestro-check ## Roda smoke E2E Maestro (.maestro/flows/smoke_app_
 test-e2e: ## Roda testes E2E com Patrol (Android device necessário)
 	patrol test -d android
 
-check-android-oauth: ## Verifica se google-services.json tem cliente OAuth Android
-	@if grep -q '"client_type": 1' android/app/google-services.json; then \
-		echo "OK: cliente OAuth Android (client_type 1) encontrado."; \
-	else \
-		echo "ERRO: google-services.json sem cliente OAuth Android (client_type 1)."; \
-		echo "Siga documentacao/chaves.md → seção Login Android."; \
-		exit 1; \
-	fi
+check-android-oauth: ## Verifica se google-services.json cobre o applicationId atual
+	@python3 tool/verificar_oauth_android.py
 
 dev-android: ## Roda local no celular/device Android conectado
 	flutter pub get

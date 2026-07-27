@@ -6,7 +6,7 @@ Você é um Analista de Qualidade Sênior. Sua tarefa é criar scripts de teste 
 
 ## Informações do Sistema
 
-**Nome:** Fisio Home Care — Gestão de Fisioterapia Domiciliar
+**Nome:** Alta — Gestão de Fisioterapia Domiciliar
 
 **Descrição:** Aplicativo mobile e web desenvolvido em Flutter para fisioterapeutas que atendem em domicílio. Permite autenticação via Google Sign-In, gestão de pacientes, agendamento de sessões, registro de evoluções clínicas e consulta operacional da agenda. Os dados são armazenados na planilha `__saas_fisio_db__` do Google Drive do próprio profissional (modelo BYODB), sem servidor central de prontuários, em conformidade com a LGPD.
 

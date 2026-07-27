@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:fisio_home_care/telas/tela_splash.dart';
+import 'package:alta/telas/tela_splash.dart';
 
 /// Destino simples para não arrastar autenticação/Google para dentro do teste.
 class _TelaDestino extends StatelessWidget {
@@ -29,7 +29,7 @@ void main() {
 
       expect(find.byKey(const Key('splash_logotipo')), findsOneWidget);
       expect(find.byIcon(Icons.favorite_rounded), findsOneWidget);
-      expect(find.text('Fisio Home Care'), findsOneWidget);
+      expect(find.text('Alta'), findsOneWidget);
       expect(
         find.text('Gestão de atendimentos\ndomiciliares de fisioterapia'),
         findsOneWidget,
@@ -52,7 +52,7 @@ void main() {
       await tester.pump(kDuracaoSplash - const Duration(milliseconds: 200));
 
       expect(find.text('destino'), findsNothing);
-      expect(find.text('Fisio Home Care'), findsOneWidget);
+      expect(find.text('Alta'), findsOneWidget);
 
       await tester.pumpAndSettle();
     });

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fisio_home_care/servicos/preferencias.dart';
+import 'package:alta/servicos/preferencias.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

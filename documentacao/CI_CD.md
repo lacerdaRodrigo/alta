@@ -1,6 +1,6 @@
 # CI/CD — Integração e Entrega Contínua
 
-> Guia da pipeline automatizada do Fisio Home Care no **GitHub Actions**.
+> Guia da pipeline automatizada do Alta no **GitHub Actions**.
 > Escrito para ser seguido mesmo sem experiência prévia com DevOps.
 
 ---

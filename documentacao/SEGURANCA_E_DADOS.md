@@ -1,6 +1,6 @@
 # Segurança, Privacidade e Conformidade LGPD
 
-Este documento descreve a arquitetura de segurança, as políticas de privacidade e a conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018) do aplicativo Fisio Home Care.
+Este documento descreve a arquitetura de segurança, as políticas de privacidade e a conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018) do aplicativo Alta.
 
 ---
 

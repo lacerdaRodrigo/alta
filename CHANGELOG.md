@@ -1,4 +1,4 @@
-# Changelog — Fisio Home Care
+# Changelog — Alta
 
 ## [1.1.0] — 2026-07-26
 
@@ -7,6 +7,22 @@
 > à mão em `pubspec.yaml`/`web/version.json`; o deploy de produção respeita esse
 > valor em vez de incrementar o patch.
 
+
+### Marca
+- **O produto passou a se chamar `Alta`.** Antes convivia com três nomes — `Fisio Home Care` (título e telas), `FisioCare` (label do launcher) e `fisio_home_care` (pacote Dart, iOS, macOS) — e nenhum era defensável: `fisiocare.com.br` já pertence a terceiro e a categoria está saturada de "Fisio+X" (ZenFisio, FisioGestor, FISIO.APP, FisIA), o que enfraquece marca, ASO e SEO. "Alta" é o desfecho de todo tratamento fisioterapêutico: nomeia o resultado entregue, não a ferramenta; 4 letras, sem acento (não divide a grafia entre marca e domínio).
+  - **A palavra-chave migrou para a listagem:** marca e launcher exibem `Alta`; `<title>`, `manifest.name` e o nome nas lojas usam `Alta — Fisioterapia Domiciliar`. Resolve o único ponto fraco do nome (palavra comum) sem sujar a marca.
+  - **Tipografia do wordmark:** de 15 letras para 4, o título precisou crescer — `fontSize` 28 → 44 e `letterSpacing` -0.6 → -1.5, replicado em `TelaSplash`, `TelaLogin` e na splash HTML. Os três **têm** de bater: o cross-fade da abertura só é invisível com o logotipo na mesma métrica.
+  - **Identificadores:** `applicationId`/`namespace` `com.rodrigo.fisio_care` → `com.rodrigo.alta` (com `MainActivity.kt` movido de diretório), pacote Dart `fisio_home_care` → `alta` (≈30 arquivos de import) e bundle do macOS. Trocado agora porque o app **ainda não foi publicado na Play Store** — depois da primeira publicação o `applicationId` é permanente para sempre.
+  - **`__saas_fisio_db__` foi mantido de propósito:** é o nome pelo qual o app localiza a planilha no Drive do usuário; renomear faria quem já está em testes perder a base. O projeto Firebase (`app-fisio-care-2`) também ficou como está — trocá-lo obrigaria a refazer o secret de deploy, as origens OAuth e o redirect URI, com ganho zero.
+  - **Pendência externa obrigatória:** o build Android quebra com `No matching client found for package name 'com.rodrigo.alta'` até o `google-services.json` ser regerado e um cliente OAuth Android ser criado para o novo pacote. Ver README.
+  - Termos de uso, política de privacidade e páginas institucionais (`web/`, `branding/`) atualizados; testes de `TelaSplash`/`TelaLogin` passaram a afirmar o nome novo.
+
+### Correções
+- **Erro de configuração do login aparecia como cancelamento silencioso.** Na migração para `com.rodrigo.alta` o login falhava e a tela voltava sem mensagem nenhuma. Duas causas somadas:
+  - `contasConectadas.listen(...)` em `provedor_autenticacao.dart` não tinha `onError`, e é justamente para esse stream que `ServicoAutenticacaoGoogleReal` encaminha os erros de `authenticationEvents` (`onError: _contasController.addError`). O erro virava `Unhandled Exception` no log em vez de estado na UI. Adicionado `onError` nos dois listeners, ambos passando por `mensagemErroLoginGoogle`.
+  - O plugin classifica como `GoogleSignInExceptionCode.canceled` **tanto** a desistência do usuário quanto `[16] Account reauth failed`, que na verdade é o Google recusando o app (`This android application is not registered to use OAuth2.0`). `mensagemErroLoginGoogle` passou a separar os dois casos e, no segundo, dizer o que resolve: criar um cliente OAuth do tipo **Android** no Google Cloud Console — cadastrar a impressão digital só no Firebase não basta (foi exatamente o que travou o login por ~40min).
+  - Novo `test/unitarios/utilitarios/mensagens_erro_google_test.dart` (7 testes) — total **293 testes**.
+- **`make check-android-oauth` dava falso positivo.** Ele fazia `grep '"client_type": 1'` no `google-services.json` inteiro, então encontrava o cliente Android de *qualquer* pacote — continuou passando depois da renomeação, enquanto o arquivo só tinha o cliente do pacote antigo. Substituído por `tool/verificar_oauth_android.py`, que lê o `applicationId` do `build.gradle.kts` e exige que **aquele** pacote tenha `client_type: 1`, com mensagem apontando a correção.
 
 ### Design
 - **Ícone do aplicativo próprio (adeus logo padrão do Flutter):** marca nova — coração (mesmo símbolo da `TelaLogin`/`TelaSplash`) atravessado por um pulso de eletrocardiograma **em espaço negativo**, sobre o gradiente violeta. A linha do pulso fica abaixo do meio do coração e o spike costura as duas metades, então a silhueta continua lendo como coração mesmo a 20px.

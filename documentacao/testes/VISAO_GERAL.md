@@ -1,6 +1,6 @@
 # 📋 Testes Automatizados — Visão Geral
 
-**Status:** ✅ 286 testes passando
+**Status:** ✅ 293 testes passando
 
 ---
 
@@ -10,12 +10,12 @@ O projeto utiliza **apenas testes unitários e de widget** (sem E2E automatizado
 
 | Categoria | Quantidade | % | Focos |
 |---|---|---|---|
-| **Unit — Utilitários** | 86 | 30% | Validadores, formatadores, gerador de IDs |
+| **Unit — Utilitários** | 93 | 32% | Validadores, formatadores, gerador de IDs |
 | **Unit — Modelos** | 25 | 9% | Serialização, transformação, cópia |
 | **Unit — Serviços** | 5 | 2% | Preferências (SharedPreferences) |
 | **Widget — Telas** | 149 | 52% | UI, interação, estados visuais |
 | **Widget — Componentes/Utilitários** | 21 | 7% | Modal de detalhes, rodapé versão, ações de agendamento |
-| **TOTAL** | **286** | **100%** | — |
+| **TOTAL** | **293** | **100%** | — |
 
 ---
 
@@ -23,7 +23,7 @@ O projeto utiliza **apenas testes unitários e de widget** (sem E2E automatizado
 
 ```
 test/
-├── unitarios/              (116 testes — lógica pura)
+├── unitarios/              (123 testes — lógica pura)
 │   ├── auxiliares/         
 │   │   └── fakes.dart                    — Mocks reutilizados
 │   ├── modelos/
@@ -64,7 +64,7 @@ test/
 ## Como Rodar
 
 ```bash
-# Todos os 286 testes
+# Todos os 293 testes
 flutter test
 
 # Apenas unitários

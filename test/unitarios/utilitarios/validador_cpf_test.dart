@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fisio_home_care/utilitarios/validador_cpf.dart';
+import 'package:alta/utilitarios/validador_cpf.dart';
 
 void main() {
   group('ValidadorCpf', () {

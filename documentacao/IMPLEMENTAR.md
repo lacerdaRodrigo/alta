@@ -1,4 +1,4 @@
-# Plano de Implementação — Fisio Home Care
+# Plano de Implementação — Alta
 
 > Este arquivo lista **apenas o que falta fazer**. O que já foi entregue está
 > registrado no [`CHANGELOG.md`](../CHANGELOG.md); o estado atual da arquitetura

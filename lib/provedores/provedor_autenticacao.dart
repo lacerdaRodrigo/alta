@@ -52,22 +52,33 @@ class AutenticacaoNotificador extends Notifier<EstadoAutenticacao> {
   @override
   EstadoAutenticacao build() {
     final servico = ref.read(provedorServicoAutenticacaoGoogle);
-    final assinaturaContas = servico.contasConectadas.listen((conta) {
-      state = state.copiarCom(
-        estaCarregando: false,
-        mensagemErro: null,
-        contaConectada: conta,
-      );
-    });
+    // O serviço encaminha os erros de `authenticationEvents` para este stream
+    // (`servico_autenticacao_google.dart`). Sem `onError` eles viravam exceção
+    // não tratada e a tela voltava sem explicação nenhuma — um erro de
+    // configuração ficava indistinguível de o usuário ter desistido.
+    final assinaturaContas = servico.contasConectadas.listen(
+      (conta) {
+        state = state.copiarCom(
+          estaCarregando: false,
+          mensagemErro: null,
+          contaConectada: conta,
+        );
+      },
+      onError: (Object erro) {
+        state = state.copiarCom(
+          estaCarregando: false,
+          mensagemErro: mensagemErroLoginGoogle(erro),
+        );
+      },
+    );
     ref.onDispose(assinaturaContas.cancel);
 
     final assinaturaSessoes = servico.sessoesConectadas.listen(
       _autenticarComSessao,
-      onError: (Object _) {
+      onError: (Object erro) {
         state = state.copiarCom(
           estaCarregando: false,
-          mensagemErro:
-              'Falha ao autenticar. Verifique sua conexão e tente novamente.',
+          mensagemErro: mensagemErroLoginGoogle(erro),
         );
       },
     );

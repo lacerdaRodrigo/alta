@@ -18,7 +18,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:fisio_home_care/componentes/design_system.dart';
+import 'package:alta/componentes/design_system.dart';
 
 /// Como o fundo do ícone é tratado em cada plataforma.
 enum FormatoIcone {
