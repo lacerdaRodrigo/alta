@@ -1,4 +1,4 @@
-# 📁 Testes Unitários (128 testes)
+# 📁 Testes Unitários (173 testes)
 
 Lógica pura: validação de entrada, transformação de dados, cálculos.
 
@@ -156,7 +156,7 @@ existente — evita a race condition do antigo `length + 1`.
 
 ---
 
-## test/unitarios/servicos/ (5 testes)
+## test/unitarios/servicos/ (50 testes)
 
 ### preferencias_test.dart (5 testes)
 
@@ -169,6 +169,112 @@ Persistência local via SharedPreferences (ID da planilha).
 ✓ limparPlanilhaId remove o valor armazenado
 ✓ salvar sobrescreve um valor existente
 ```
+
+---
+
+### servico_google_drive_test.dart (6 testes)
+
+Localização da planilha `__saas_fisio_db__` no Drive do usuário.
+
+```dart
+✓ Busca pelo nome exato da base, não por "contains"
+✓ Pede a lista ordenada da mais recente para a mais antiga
+✓ Converte os arquivos preservando id, nome e data
+✓ Descarta arquivos sem id
+✓ buscarPlanilhaBanco devolve null quando não há nenhuma
+✓ buscarPlanilhaBanco devolve a primeira (mais recente)
+```
+
+> **Por que "nome exato" tem teste próprio:** com `name contains`, as cópias que
+> o Drive cria sozinho (`__saas_fisio_db__ (1)`, `Cópia de ...`) entravam no
+> resultado e, sendo mais recentes, viravam a base ativa em silêncio.
+
+---
+
+### servico_google_sheets_test.dart (10 testes)
+
+Wrapper da Sheets API: leitura de abas, versão do esquema e escrita.
+
+```dart
+// Leitura
+✓ lerAba descarta linhas totalmente vazias
+✓ lerAba pede o intervalo a partir da segunda linha (pula cabeçalho)
+
+// Versão do esquema
+✓ Lê o número dentro da linha, não a linha inteira
+✓ Assume versão 1 quando a aba Versao está vazia
+✓ validarVersao aceita a versão suportada
+✓ validarVersao recusa planilha de versão futura
+
+// Escrita
+✓ criarPlanilhaBanco cria todas as abas, inclusive Versao
+✓ criarPlanilhaBanco grava os cabeçalhos de cada aba
+✓ garantirEstrutura cria só as abas que faltam
+✓ inserirLinha manda append com USER_ENTERED
+```
+
+> `valores[0].toString()` sobre a resposta da API dava `"[2]"`, o parse falhava
+> e **toda** planilha era tratada como versão 1 — inclusive uma de versão
+> futura, que `validarVersao` deveria recusar.
+
+---
+
+### servico_repositorio_dados_test.dart (29 testes)
+
+CRUD sobre a planilha: resolução do ID, carregamento e gravação.
+
+```dart
+// obterPlanilhaId (7)
+✓ Usa o ID salvo nas preferências sem consultar o Drive
+✓ Descarta o ID salvo quando a planilha tem versão incompatível
+✓ Adota a planilha existente no Drive e a persiste
+✓ Cria uma planilha quando não existe nenhuma
+✓ Persiste o ID mesmo se gravar a versão falhar
+✓ Reutiliza o ID em memória sem buscar de novo no Drive
+✓ limparCache apaga o ID persistido
+
+// Planilhas duplicadas (3)
+✓ Usa a mais recente e reporta as demais
+✓ Não reporta duplicata quando só existe uma planilha
+✓ carregarTudo propaga as duplicatas para a UI
+
+// carregarTudo (6)
+✓ Converte linhas curtas sem estourar índice
+✓ Lê o valor da sessão com vírgula decimal
+✓ Carrega evoluções pela mesma regra do modelo
+✓ Usa o valor padrão da sessão vindo de Configuracoes
+✓ Cai em 150,00 quando a configuração não existe
+✓ Logs de auditoria do mais recente para o mais antigo
+
+// Escrita (12)
+✓ salvarPaciente grava as 19 colunas na ordem do cabeçalho
+✓ salvarPaciente registra auditoria da operação
+✓ registrarAuditoria gera o próximo ID a partir do maior existente
+✓ atualizarSituacaoAgendamento troca só a coluna Situacao
+✓ atualizarSituacaoAgendamento ignora ID inexistente
+✓ arquivarPaciente marca a situação preservando o resto da linha
+✓ restaurarPaciente devolve a situação para Ativo
+✓ atualizarPaciente falha alto quando o paciente sumiu da planilha
+✓ atualizarEvolucao não escreve nada se o ID não existe
+✓ salvarValorSessaoPadrao insere a chave quando ela não existe
+✓ salvarValorSessaoPadrao atualiza a linha existente
+✓ salvarAgendamento grava as 9 colunas da Agenda
+
+// Utilidades (1)
+✓ urlPlanilha aponta para o documento no Drive
+```
+
+> **`ServidorGoogleFake`** (`test/unitarios/auxiliares/servidor_google_fake.dart`)
+> responde no nível do HTTP, via `MockClient` do `package:http`. É o único ponto
+> de injeção que existe — `DriveApi`/`SheetsApi` são construídos a partir de um
+> `http.Client` — e tem a vantagem de exercitar o que de fato quebra nesta
+> camada: a query enviada ao Drive, o range de cada aba e a ordem dos valores
+> gravados. Um fake de classe passaria por cima justamente disso.
+>
+> Dois testes fixam regressões conhecidas: o ID da planilha continua persistido
+> mesmo quando gravar a aba `Versao` falha (senão a tentativa seguinte cria
+> **outra** planilha), e `registrarAuditoria` usa `GeradorId` (max+1, `L008`),
+> não `length + 1`, que sobrescreveria linhas.
 
 ---
 

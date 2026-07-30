@@ -31,7 +31,7 @@ O App adota o modelo **Bring Your Own Database**: todos os dados são armazenado
 |---|---|
 | **Login** | Google Sign-In (OAuth 2.0), `google_sign_in` 7.x. O App nunca acessa a senha do usuário. No web o login parte do botão renderizado pelo próprio Google (o SDK não permite fluxo iniciado pela aplicação); no Android, do fluxo nativo. |
 | **Escopos** | `email`, `drive.file` e `spreadsheets`. `drive.file` restringe o acesso aos arquivos que o próprio App criou — não alcança outros arquivos, fotos ou pastas do Drive. `spreadsheets` é exigido pela Sheets API para ler e escrever na planilha do usuário. |
-| **Token** | Access token temporário, resolvido a cada requisição via `authorizationHeaders()`. Não é armazenado de forma persistente pelo App. No web expira em 1h. |
+| **Token** | Access token temporário, resolvido a cada requisição pelo `AutorizadorGoogle` (`lib/servicos/autorizador_google.dart`). Não é armazenado de forma persistente pelo App: no Android vem de `conta.authorizationClient`; no web fica só em memória, indexado pelo e-mail da conta, e expira em 1h. |
 | **Autenticação vs. autorização** | São etapas separadas: identificar o usuário não concede, por si só, acesso ao Drive/Sheets. O App só considera a sessão válida depois de confirmar a autorização dos escopos. |
 | **Consentimento de termos** | Checkbox obrigatório na tela de login. Enquanto não for aceito, o botão de login do Google não é sequer construído — não basta desabilitá-lo visualmente, porque no web ele é um elemento DOM que receberia o clique por fora do controle do App. |
 

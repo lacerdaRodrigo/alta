@@ -7,6 +7,7 @@ import 'package:alta/telas/tela_configuracoes.dart';
 import 'package:alta/telas/tela_login.dart';
 import 'package:alta/provedores/provedor_autenticacao.dart';
 import 'package:alta/provedores/provedores_dados.dart';
+import 'package:alta/servicos/servico_google_drive.dart';
 import 'package:alta/servicos/servico_repositorio_dados.dart';
 import '../../unitarios/auxiliares/fakes.dart';
 
@@ -36,6 +37,13 @@ class _PlanilhaIdFixo extends PlanilhaIdNotifier {
   String? build() => _id;
 }
 
+class _PlanilhasDuplicadasFixas extends PlanilhasDuplicadasNotifier {
+  final List<PlanilhaBanco> _dados;
+  _PlanilhasDuplicadasFixas(this._dados);
+  @override
+  List<PlanilhaBanco> build() => _dados;
+}
+
 // Large surface so all content renders without scrolling
 const _bigSurface = Size(600, 3000);
 
@@ -43,6 +51,7 @@ Widget _app({
   RepositorioDadosGoogle? repositorio,
   List<String> logs = const [],
   String? planilhaId,
+  List<PlanilhaBanco> duplicadas = const [],
 }) {
   return ProviderScope(
     overrides: [
@@ -54,6 +63,9 @@ Widget _app({
       provedorLogsAuditoria.overrideWith(() => LogsComDados(logs)),
       if (planilhaId != null)
         provedorPlanilhaId.overrideWith(() => _PlanilhaIdFixo(planilhaId)),
+      provedorPlanilhasDuplicadas.overrideWith(
+        () => _PlanilhasDuplicadasFixas(duplicadas),
+      ),
     ],
     child: const MaterialApp(
       home: Scaffold(body: TelaConfiguracoes()),
@@ -261,6 +273,59 @@ void main() {
 
       // url_launcher returned false — no crash, widget still present
       expect(find.byType(TelaConfiguracoes), findsOneWidget);
+    });
+
+    testWidgets('sem duplicatas não exibe aviso na base de dados', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(_bigSurface);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(_app(planilhaId: 'ABC123'));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.warning_amber_rounded), findsNothing);
+    });
+
+    testWidgets('duplicata no Drive vira aviso visível', (tester) async {
+      // O app grava sempre na planilha mais recente. Sem esse aviso, a base
+      // antiga só "para de receber sessões" e o usuário não descobre por quê.
+      await tester.binding.setSurfaceSize(_bigSurface);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        _app(
+          planilhaId: 'ABC123',
+          duplicadas: const [
+            PlanilhaBanco(id: 'ANTIGA', nome: '__saas_fisio_db__'),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
+      expect(
+        find.textContaining('Há outra planilha com este nome'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('duas duplicatas usam a redação no plural', (tester) async {
+      await tester.binding.setSurfaceSize(_bigSurface);
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        _app(
+          planilhaId: 'ABC123',
+          duplicadas: const [
+            PlanilhaBanco(id: 'A', nome: '__saas_fisio_db__'),
+            PlanilhaBanco(id: 'B', nome: '__saas_fisio_db__'),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Há mais 2 planilhas'), findsOneWidget);
     });
   });
 }

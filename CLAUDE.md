@@ -91,6 +91,10 @@ fisio-home-care/
 │   │
 │   ├── servicos/
 │   │   ├── servico_autenticacao_google.dart    # Google Sign-In wrapper
+│   │   ├── autorizador_google.dart             # Tokens Drive/Sheets (ponte condicional)
+│   │   ├── autorizador_google_base.dart        # Contrato do autorizador
+│   │   ├── autorizador_google_stub.dart        # Nativo: conta.authorizationClient
+│   │   ├── autorizador_google_web.dart         # Web: token client do GIS sem seletor
 │   │   ├── servico_repositorio_dados.dart      # Google Sheets CRUD
 │   │   ├── servico_google_drive.dart           # Localizar planilha
 │   │   ├── servico_google_sheets.dart          # Wrapper Google Sheets API
@@ -108,15 +112,19 @@ fisio-home-care/
 │       └── mensagens_erro_google.dart    # Mapear erros Google
 │
 ├── test/
-│   ├── unitarios/                   # 128 testes — lógica pura
+│   ├── unitarios/                   # 173 testes — lógica pura
 │   │   ├── auxiliares/
-│   │   │   └── fakes.dart           # Mocks reutilizados
+│   │   │   ├── fakes.dart           # Mocks reutilizados
+│   │   │   └── servidor_google_fake.dart  # Drive/Sheets falso no nível do HTTP
 │   │   ├── modelos/
 │   │   │   ├── paciente_test.dart           (9 testes)
 │   │   │   ├── agendamento_test.dart        (10 testes)
 │   │   │   └── evolucao_test.dart           (11 testes)
 │   │   ├── servicos/
-│   │   │   └── preferencias_test.dart       (5 testes)
+│   │   │   ├── preferencias_test.dart              (5 testes)
+│   │   │   ├── servico_google_drive_test.dart      (6 testes — busca por nome exato)
+│   │   │   ├── servico_google_sheets_test.dart     (10 testes — versão do esquema, abas)
+│   │   │   └── servico_repositorio_dados_test.dart (29 testes — planilha, parsing, escrita)
 │   │   └── utilitarios/
 │   │       ├── validadores_test.dart        (46 testes)
 │   │       ├── validador_cpf_test.dart      (9 testes)
@@ -124,7 +132,7 @@ fisio-home-care/
 │   │       ├── gerador_id_test.dart         (8 testes — 100% cobertura)
 │   │       └── mensagens_erro_google_test.dart (7 testes — diagnóstico de login)
 │   │
-│   └── widgets/                     # 181 testes — UI + componentes
+│   └── widgets/                     # 191 testes — UI + componentes
 │       ├── componentes/
 │       │   ├── modal_detalhes_evolucao_test.dart   (6 testes)
     │   ├── modal_detalhes_paciente_test.dart   (12 testes)
@@ -133,8 +141,8 @@ fisio-home-care/
 │       │   └── acoes_agendamento_test.dart         (6 testes)
 │       └── telas/
 │           ├── tela_splash_test.dart                 (7 testes — abertura animada + handoff para o login)
-│           ├── tela_login_test.dart                  (9 testes — navegação única + login não-programático)
-│           ├── tela_dashboard_test.dart              (16 testes)
+│           ├── tela_login_test.dart                  (13 testes — navegação única + login não-programático)
+│           ├── tela_dashboard_test.dart              (19 testes)
 │           ├── tela_cadastro_paciente_test.dart      (23 testes)
 │           ├── tela_editar_paciente_test.dart        (6 testes — campos travados + atualização)
 │           ├── tela_editar_sessao_test.dart          (7 testes — editar/reagendar sessão)
@@ -158,9 +166,9 @@ fisio-home-care/
 │   ├── chaves.md                    # (no .gitignore) — credenciais
 │   └── testes/
 │       ├── README.md                # Índice de testes
-│       ├── VISAO_GERAL.md           # Overview 309 testes
-│       ├── UNITARIOS.md             # Detalhe dos 123 unitários
-│       └── WIDGETS.md               # Detalhe dos 181 widgets
+│       ├── VISAO_GERAL.md           # Overview 364 testes
+│       ├── UNITARIOS.md             # Detalhe dos 173 unitários
+│       └── WIDGETS.md               # Detalhe dos 191 widgets
 │
 ├── QA/
 │   └── qa.md                        # Script QA manual (NOT E2E automatizado)
@@ -301,19 +309,19 @@ Paciente.calcularIdade()   // ✓ delega para UtilitariosData
 
 ---
 
-## Testes (309 testes automatizados)
+## Testes (364 testes automatizados)
 
 ### Estrutura
 
 ```
 test/
-├── unitarios/  (128 testes)
+├── unitarios/  (173 testes)
 │   ├── auxiliares/     — fakes.dart (mocks reutilizados)
 │   ├── modelos/        — 25 testes (serialização, transformação)
-│   ├── servicos/       — 5 testes (preferencias)
+│   ├── servicos/       — 50 testes (preferencias, Drive, Sheets, repositório)
 │   └── utilitarios/    — 93 testes (validadores, data, CPF, gerador_id, erros do Google)
 │
-└── widgets/    (181 testes)
+└── widgets/    (191 testes)
     ├── telas/        — 13 telas principais (UI, interação)
     ├── componentes/  — modal de detalhes do paciente + rodapé versão
     └── utilitarios/  — ações de agendamento
@@ -346,7 +354,7 @@ flutter test --coverage
 ✅ **Validação de entrada** — 55 testes (CPF, telefone, nome, data)  
 ✅ **Modelos** — 25 testes (serialização, cópia, status)  
 ✅ **Utilitários** — 31 testes (idade, formatação, geração de ID)  
-✅ **UI + Interação** — 181 testes (13 telas principais + componentes/utilitários)  
+✅ **UI + Interação** — 191 testes (13 telas principais + componentes/utilitários)  
 
 ❌ **Não coberto:**
 - Google Sheets API real (usaria quota, seria lento)
@@ -410,6 +418,8 @@ flutter run
 | `BackdropFilter` reimplementado inline em telas | Resolvido (o redesign removeu todos os usos) | ✅ |
 | Lógica de popup duplicada em dashboard/sessoes | Resolvido (centralizado em `acoes_agendamento.dart`) | ✅ |
 | Todas as telas principais possuem testes de widget | — | ✅ |
+| Busca da planilha por `name contains` adotava cópias do Drive como base | Resolvido (nome exato + aviso de duplicata em Configurações) | ✅ |
+| `lerVersaoEsquema` lia a linha inteira e tratava toda planilha como versão 1 | Resolvido (lê a primeira célula) | ✅ |
 | Botão de login do web é o do Google (platform view) sobreposto ao desenho | Trade-off aceito para preservar o visual — ver regras abaixo | 🟡 |
 
 ### ⚠️ Login no web — regras que não podem ser quebradas
@@ -427,9 +437,19 @@ testes: fora do web `construirBotaoGoogleRenderizado` vira `SizedBox.shrink()`.
   verdade (ex.: enquanto os termos não são aceitos), **não construir o widget**.
 - **O GIS limita o botão a 400px** e centraliza. O desenho por baixo tem que
   respeitar a mesma largura, senão as extremidades não respondem ao clique.
-- **Não passar hint de usuário na autorização no web.** `conta.authorizationClient`
-  envia a conta como hint, e o plugin traduz isso em `prompt: 'select_account'`,
-  reabrindo o seletor de contas. Usar `GoogleSignIn.instance.authorizationClient`.
+- **A autorização no web não usa o `authorizationClient` do plugin.**
+  `google_sign_in_web` amarra hint e prompt (`src/gis_client.dart`):
+  `prompt: userHint == null ? '' : 'select_account'`. Com hint ele força o
+  seletor; sem hint manda `login_hint: null` e o Google pergunta a conta de
+  novo. Como o login web tem duas etapas (botão do GIS + token client), o
+  usuário escolhia a conta **duas vezes**. `lib/servicos/autorizador_google_web.dart`
+  monta o token client direto (`google_identity_services_web`) com
+  `login_hint: email` **e** `prompt: ''` — o par que o plugin não permite.
+  Fora do web, `autorizador_google_stub.dart` mantém `conta.authorizationClient`.
+- **Cache de token é por e-mail e a requisição é deduplicada.** No web o token
+  vale 1h e não se renova sozinho; sem o cache por conta, trocar de usuário
+  reaproveitaria o token do anterior, e sem a deduplicação duas chamadas
+  simultâneas às APIs abririam dois popups.
 
 Como diagnosticar: rodar o app e inspecionar o DOM — `flt-platform-view` para
 saber se o botão existe, e `elementFromPoint(...).closest('[role="button"]')` nas
@@ -539,7 +559,7 @@ make release-prod  # mescla develop → master → dispara deploy de produção 
 | `documentacao/ESPECIFICACOES_TELAS.md` | Requisitos funcionais das telas | ✅ |
 | `documentacao/SEGURANCA_E_DADOS.md` | LGPD, OAuth, modelo BYODB | ✅ |
 | `documentacao/IMPLEMENTAR.md` | Roadmap priorizado | ✅ |
-| `documentacao/testes/` | 309 testes automatizados | ✅ |
+| `documentacao/testes/` | 364 testes automatizados | ✅ |
 | `documentacao/CI_CD.md` | Pipeline GitHub Actions: fluxo, secrets, uso e troubleshooting | ✅ |
 | `QA/qa.md` | Script QA manual (não é E2E) | ✅ |
 
@@ -584,6 +604,6 @@ Para questões sobre estrutura, padrões ou decisões técnicas, **SEMPRE consul
 
 ---
 
-**Última atualização:** 2026-07-26  
-**Versão:** 1.0.18 (produção) — 1.1.0 pendente de deploy  
+**Última atualização:** 2026-07-29  
+**Versão:** 1.1.1 (`pubspec.yaml` e `web/version.json`) — o deploy de `master` publica como 1.1.2  
 **Branches:** master, develop, identidade-visual

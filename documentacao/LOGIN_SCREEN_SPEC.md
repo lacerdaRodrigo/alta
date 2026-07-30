@@ -10,9 +10,19 @@ Esta tela é a porta de entrada do aplicativo, responsável pela autenticação 
       design system, para preservar a identidade visual da tela. É o SDK que
       recebe o clique — o desenho por baixo é apenas aparência.
     * Após selecionar a conta Google, a autorização de acesso ao Drive/Sheets ocorre em uma segunda ação explícita do usuário para evitar bloqueio de popup pelo navegador.
-      Quando a conta já concedeu os escopos, essa etapa não pede nova escolha de
-      conta — o App solicita a autorização sem enviar hint de usuário, o que faz
-      o Google reaproveitar a sessão ativa.
+      Essa etapa **não pode pedir nova escolha de conta**: o App monta o token
+      client do GIS com o e-mail escolhido como `login_hint` e `prompt` vazio
+      (`lib/servicos/autorizador_google_web.dart`), então o Google vai direto à
+      conta e nem exibe a janela quando o consentimento já existe. O
+      `authorizationClient` do `google_sign_in_web` não serve aqui — ele amarra
+      o hint a `prompt: 'select_account'`, e sem hint o Google pergunta a conta
+      de novo quando há mais de uma sessão no navegador.
+* **Links legais:** "Política de Privacidade" e "Termos de Uso" no texto do
+    consentimento abrem as páginas publicadas (`/privacidade.html` e
+    `/termos.html`, URLs em `lib/utilitarios/links_legais.dart`) em aba/navegador
+    externo, sem sair da tela nem perder o estado do checkbox. **Não basta
+    estilizar o `TextSpan`:** sem `recognizer` ele é só texto colorido, e o
+    usuário precisa aceitar os termos sem ter como lê-los.
 * **LGPD e Consentimento:**
     * O sistema deve apresentar o "Termo de Consentimento para Tratamento de Dados Pessoais e de Saúde".
     * **Regra de Negócio:** O acesso à funcionalidade de login deve ser condicionado ao aceite explícito do termo através de um campo de verificação (checkbox).
