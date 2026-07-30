@@ -1,4 +1,8 @@
 class Evolucao {
+  /// Prazo para corrigir um registro. Passado isso a evolução vira prontuário
+  /// fechado: continua **visível**, mas não pode mais ser alterada.
+  static const janelaEdicao = Duration(hours: 24);
+
   static const indicesColunas = {
     'idEvolucao': 0,
     'idPaciente': 1,
@@ -48,6 +52,12 @@ class Evolucao {
     DateTime? dataRegistro,
   }) : dataRegistro = dataRegistro ?? DateTime.now();
 
+  /// Recebe `agora` para ser testável sem depender do relógio do sistema.
+  bool editavelEm(DateTime agora) =>
+      agora.difference(dataRegistro) < janelaEdicao;
+
+  bool get editavel => editavelEm(DateTime.now());
+
   Map<String, dynamic> paraMapaPlanilha() {
     return {
       'ID_Evolucao': idEvolucao,
@@ -80,14 +90,19 @@ class Evolucao {
 
     final horarioInicio = _parseHora(obterValor('horarioInicioReal'));
     final horarioFim = _parseHora(obterValor('horarioFimReal'));
+    final dataAtendimento = _parseData(obterValor('dataAtendimento'));
 
     return Evolucao(
       idEvolucao: obterValor('idEvolucao'),
       idPaciente: obterValor('idPaciente'),
       idAgendamento: obterValor('idAgendamento'),
-      dataAtendimento: _parseData(obterValor('dataAtendimento')),
+      dataAtendimento: dataAtendimento,
       evolucaoTexto: obterValor('evolucaoTexto'),
-      dataRegistro: DateTime.tryParse(obterValor('dataRegistro')) ?? DateTime.now(),
+      // Cai em `dataAtendimento`, não em "agora": com `DateTime.now()` uma linha
+      // sem Data_Registro renasceria dentro da janela das 24h a cada
+      // carregamento, deixando a evolução editável para sempre.
+      dataRegistro:
+          DateTime.tryParse(obterValor('dataRegistro')) ?? dataAtendimento,
       localAtendimento: obterValor('localAtendimento', padrao: 'Domicílio'),
       statusPresenca: obterValor('statusPresenca', padrao: 'Presente'),
       dorSessao: int.tryParse(obterValor('dorSessao', padrao: '0')) ?? 0,

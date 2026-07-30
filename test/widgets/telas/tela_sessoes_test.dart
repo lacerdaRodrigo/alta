@@ -126,7 +126,7 @@ void main() {
       expect(find.text('Realizado'), findsOneWidget);
     });
 
-    testWidgets('deve listar pendências pelo filtro Pendentes', (tester) async {
+    testWidgets('deve listar sessões vencidas pelo filtro Vencidas', (tester) async {
       // Past date that is always in the current month (midnight of today = before now)
       final hoje = DateTime.now();
       final passadoMesAtual = DateTime(hoje.year, hoje.month, hoje.day);
@@ -138,10 +138,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Pendentes'));
+      await tester.tap(find.text('Vencidas'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Pendente'), findsOneWidget);
+      expect(find.text('Vencida'), findsOneWidget);
     });
 
     testWidgets('deve buscar sessões por nome do paciente', (tester) async {
@@ -198,7 +198,7 @@ void main() {
       await tester.pumpWidget(_criarApp(const []));
       await tester.pumpAndSettle();
 
-      for (final filtro in ['Hoje', 'Futuras', 'Pendentes', 'Realizadas']) {
+      for (final filtro in ['Hoje', 'Futuras', 'Vencidas', 'Realizadas']) {
         await tester.ensureVisible(find.text(filtro));
         await tester.tap(find.text(filtro));
         await tester.pumpAndSettle();
@@ -279,12 +279,12 @@ void main() {
       expect(find.text('Ana Realizada'), findsNothing);
     });
 
-    testWidgets('filtro Pendentes mostra sessões atrasadas/anteriores', (
+    testWidgets('filtro Vencidas mostra sessões atrasadas/anteriores', (
       tester,
     ) async {
       await montar(tester);
 
-      await tester.tap(find.text('Pendentes'));
+      await tester.tap(find.text('Vencidas'));
       await tester.pumpAndSettle();
 
       expect(find.text('Pedro Pendente'), findsOneWidget);

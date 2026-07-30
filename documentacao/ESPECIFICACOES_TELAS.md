@@ -236,6 +236,7 @@ Esta tela exibe o prontuário clínico consolidado do paciente em ordem cronoló
 ## 2. Implementação Técnica
 * **Filtro de Dados:** O aplicativo deve realizar a consulta na aba `Evolucoes` do Google Sheets aplicando o filtro `ID_Paciente == PacienteSelecionado.ID_Paciente`.
 * **Ordenação no App:** A ordenação decrescente deve ser realizada via código (`list.sort()`) comparando as datas do campo `Data_Atendimento`.
+* **Janela de Edição:** O botão `Editar` de cada nó aparece apenas quando `evolucao.editavel` (menos de `Evolucao.janelaEdicao` desde `Data_Registro`). O conteúdo permanece visível independentemente disso — a timeline já mostra o texto completo, sem truncar.
 
 ---
 
@@ -247,13 +248,15 @@ Esta tela consolida todas as evoluções registradas, independentemente do pacie
 * **Lista Geral:** Exibe todas as evoluções da aba `Evolucoes` em ordem decrescente por `Data_Atendimento`.
 * **Busca:** Permite pesquisar por paciente, CPF, data, texto da evolução, condição clínica, local ou presença.
 * **Visualização:** Permite alternar entre lista geral e agrupamento `Por paciente`, reunindo todas as evoluções de uma pessoa em um grupo expansível.
-* **Contexto do Paciente:** Cada card exibe o nome do paciente, data da evolução, condição clínica, texto resumido e metadados de dor, local e presença.
+* **Contexto do Paciente:** Cada card exibe o nome do paciente, data da evolução, condição clínica, texto resumido (3 linhas) e metadados de dor, local e presença.
+* **Abrir um Registro:** Tocar em qualquer card — na lista geral ou dentro de um grupo `Por paciente` — abre um modal somente leitura com o registro completo, inclusive o texto clínico inteiro. O modal abre **sempre**, independente da idade do registro; a janela de 24h decide apenas se o botão `Editar` aparece. Passadas as 24h, o rodapé exibe `Registro fechado — mais de 24h`.
 * **Estado Vazio:** Se não houver evoluções, exibe mensagem amigável informando que nenhum registro foi criado.
 
 ## 2. Implementação Técnica
 * **Dados:** Usa `provedorListaEvolucoes` e `provedorListaPacientes` para cruzar `ID_Paciente` com o nome do paciente.
 * **Persistência:** Não grava dados. É uma tela somente leitura.
 * **Ordenação:** A lista geral e os grupos por paciente mantêm as evoluções mais recentes no topo.
+* **Modal de Detalhes:** `mostrarModalDetalhesEvolucao` (`lib/componentes/modal_detalhes_evolucao.dart`). O botão `Editar` só é construído quando `evolucao.editavel` **e** o paciente foi encontrado na lista carregada — `TelaRegistroEvolucao` exige um `Paciente` não-nulo.
 
 ---
 

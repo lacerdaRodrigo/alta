@@ -28,6 +28,9 @@ graph TD
     AcoesSessao["Menu: Desfecho da Sessão"]
     EditarSessao["Tela: Editar Sessão"]
     HistoricoGeral["Tela: Histórico Geral de Evoluções"]
+    ModalEvolucao["Modal: Detalhes da Evolução (somente leitura)"]
+    JanelaEdicao{"Menos de 24h do registro?"}
+    RegistroFechado["Rodapé: Registro fechado — sem edição"]
     DateValidator{"Data Futura?"}
     GoogleSheets[("Google Sheets Backend")]
     
@@ -77,7 +80,7 @@ graph TD
     SessoesScreen -->|Filtrar futuras, pendentes, canceladas, faltas, realizadas| SessoesScreen
     SessoesScreen -->|Resolver sessão| AcoesSessao
     PendenciasAgenda -->|Resolver sessão| AcoesSessao
-    Dashboard -->|Card Total de Evoluções| HistoricoGeral
+    PacientesScreen -->|Pílula Evoluções| HistoricoGeral
     AcoesSessao -->|Editar sessão (só Agendado)| EditarSessao
     AcoesSessao -->|Registrar evolução| EvolucaoScreen
     AcoesSessao -->|Falta ou cancelamento| GoogleSheets
@@ -103,6 +106,13 @@ graph TD
     DetailsModal -->|Botão: Ver Histórico| TimelineScreen
     DetailsModal -->|Botão: Nova Evolução| EvolucaoScreen
     
+    %% Leitura de evoluções
+    HistoricoGeral -->|Tocar em um card (sempre abre)| ModalEvolucao
+    ModalEvolucao -->|Ler registro completo| JanelaEdicao
+    JanelaEdicao -- Sim --> EvolucaoScreen
+    JanelaEdicao -- Não --> RegistroFechado
+    TimelineScreen -->|Botão: Editar (só menos de 24h)| EvolucaoScreen
+
     %% Evolução
     EvolucaoScreen -->|Botão Microfone| SpeechToText
     SpeechToText -->|Preencher Texto| EvolucaoScreen
@@ -133,9 +143,9 @@ graph TD
     %% Aplicação das classes nos elementos correspondentes
     class Start startEnd;
     
-    class LoginScreen,TermsModal,Dashboard,SessoesScreen,PacientesScreen,NovaSessaoScreen,CadastroPaciente,EditarPaciente,EditarSessao,DetailsModal,TimelineScreen,EvolucaoScreen,ConfiguracoesScreen,HistoricoGeral,FinanceiroScreen screen;
+    class LoginScreen,TermsModal,Dashboard,SessoesScreen,PacientesScreen,NovaSessaoScreen,CadastroPaciente,EditarPaciente,EditarSessao,DetailsModal,TimelineScreen,EvolucaoScreen,ConfiguracoesScreen,HistoricoGeral,FinanceiroScreen,ModalEvolucao screen;
     
-    class Splash,CheckboxLGPD,DbLoading,DateValidator,CpfValidator,ConfirmacaoCampos,SpeechToText,RouteSelection,LogoutAction,AcoesSessao,PendenciasAgenda action;
+    class Splash,CheckboxLGPD,DbLoading,DateValidator,CpfValidator,ConfirmacaoCampos,SpeechToText,RouteSelection,LogoutAction,AcoesSessao,PendenciasAgenda,JanelaEdicao,RegistroFechado action;
     
     class GoogleSheets sheets;
     

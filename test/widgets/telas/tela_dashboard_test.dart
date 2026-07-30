@@ -56,6 +56,12 @@ Paciente _paciente({
   );
 }
 
+/// Horários ancorados nos extremos do dia: o rótulo da sessão compara o horário
+/// previsto com o relógio real, então prender o teste a um horário fixo do meio
+/// do dia o faria passar de manhã e falhar à tarde.
+const _horaFutura = '23:59';
+const _horaPassada = '00:00';
+
 Agendamento _agendamento({
   required String id,
   String idPaciente = 'P001',
@@ -325,11 +331,14 @@ void main() {
           carregamento: _carregado,
           pacientes: [_paciente()],
           agendamentos: [
-            _agendamento(id: 'A001', data: hoje, horaInicio: '09:00'),
+            // `_horaFutura` / `_horaPassada`: o rótulo depende do horário
+            // previsto contra o relógio real, então ancorar em '09:00' fazia o
+            // teste passar de manhã e falhar de tarde.
+            _agendamento(id: 'A001', data: hoje, horaInicio: _horaFutura),
             _agendamento(
               id: 'A002',
               data: hoje,
-              horaInicio: '10:00',
+              horaInicio: _horaPassada,
               situacao: Agendamento.situacaoRealizado,
             ),
           ],
@@ -340,6 +349,89 @@ void main() {
       expect(find.text('João Dashboard'), findsWidgets);
       expect(find.text('Agendado'), findsOneWidget);
       expect(find.text('Realizado'), findsOneWidget);
+    });
+
+    testWidgets('sessão com horário passado aparece como Vencida', (
+      tester,
+    ) async {
+      await _montar(
+        tester,
+        _criarApp(
+          carregamento: _carregado,
+          pacientes: [_paciente()],
+          agendamentos: [
+            _agendamento(
+              id: 'A001',
+              data: DateTime.now(),
+              horaInicio: _horaPassada,
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Vencida'), findsOneWidget);
+      expect(find.text('Agendado'), findsNothing);
+    });
+
+    testWidgets('sessão de hoje ainda por vir não conta como pendência', (
+      tester,
+    ) async {
+      // Regressão: o contador comparava só a data, então a sessão do dia era
+      // contada como pendência desde a meia-noite, antes de acontecer.
+      await _montar(
+        tester,
+        _criarApp(
+          carregamento: _carregado,
+          pacientes: [_paciente()],
+          agendamentos: [
+            _agendamento(
+              id: 'A001',
+              data: DateTime.now(),
+              horaInicio: _horaFutura,
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final pendencias = find.ancestor(
+        of: find.text('Pendências'),
+        matching: find.byType(FisioStatTile),
+      );
+      expect(
+        find.descendant(of: pendencias, matching: find.text('0')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('card da agenda responde ao toque', (tester) async {
+      await _montar(
+        tester,
+        _criarApp(
+          carregamento: _carregado,
+          pacientes: [_paciente()],
+          agendamentos: [
+            _agendamento(
+              id: 'A001',
+              data: DateTime.now(),
+              horaInicio: _horaPassada,
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // `FisioCard` só vira `InkWell` quando recebe `onTap` — o card da agenda
+      // não tinha nenhum, então a pendência era exibida aqui e só resolvível na
+      // aba Sessões. Asserção estrutural: não navega, não depende de plugin.
+      expect(
+        find.ancestor(
+          of: find.text('João Dashboard').first,
+          matching: find.byType(InkWell),
+        ),
+        findsWidgets,
+      );
     });
 
     testWidgets('contador de sessões do dia exibido no header', (

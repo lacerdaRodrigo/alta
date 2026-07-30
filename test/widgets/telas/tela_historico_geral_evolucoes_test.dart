@@ -50,6 +50,7 @@ Evolucao _evolucao(
   String texto,
   String condicao, {
   String idPaciente = 'P001',
+  DateTime? dataRegistro,
 }) {
   return Evolucao(
     idEvolucao: id,
@@ -57,6 +58,7 @@ Evolucao _evolucao(
     idAgendamento: 'A$id',
     dataAtendimento: DateTime(2026, 6, 10),
     evolucaoTexto: texto,
+    dataRegistro: dataRegistro,
     horarioInicioReal: DateTime(2026, 6, 10, 8),
     horarioFimReal: DateTime(2026, 6, 10, 9),
     condicaoPaciente: condicao,
@@ -191,6 +193,64 @@ void main() {
 
       expect(find.text('Alice'), findsOneWidget);
       expect(find.text('Bruno'), findsOneWidget);
+    });
+
+    testWidgets('tocar no card abre o modal de detalhes', (tester) async {
+      // Regressão: o card era um FisioCard sem onTap, então o registro não
+      // tinha porta de entrada nenhuma — o texto cortado em 3 linhas ficava
+      // inacessível.
+      await tester.pumpWidget(
+        _criarApp([_evolucao('001', 'Treino de marcha com apoio', 'Melhora')]),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SelectableText), findsNothing);
+
+      await tester.tap(find.text('Treino de marcha com apoio'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SelectableText), findsOneWidget);
+      expect(find.text('Status: Presente'), findsOneWidget);
+    });
+
+    testWidgets('tocar no card dentro da visão por paciente abre o modal', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _criarApp([_evolucao('001', 'Treino de marcha com apoio', 'Melhora')]),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Por paciente'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Maria Evolução'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Treino de marcha com apoio'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SelectableText), findsOneWidget);
+    });
+
+    testWidgets('modal abre para evolução com mais de 24h', (tester) async {
+      await tester.pumpWidget(
+        _criarApp([
+          _evolucao(
+            '001',
+            'Registro antigo do paciente',
+            'Melhora',
+            dataRegistro: DateTime.now().subtract(const Duration(days: 5)),
+          ),
+        ]),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Registro antigo do paciente'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SelectableText), findsOneWidget);
+      expect(find.text('Registro fechado — mais de 24h'), findsOneWidget);
+      expect(find.text('Editar'), findsNothing);
     });
 
     testWidgets('botão voltar aciona o retorno', (tester) async {

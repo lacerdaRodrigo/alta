@@ -71,6 +71,13 @@ class Agendamento {
         data.day == referencia.day;
   }
 
+  /// Definição canônica de sessão **vencida**: o horário previsto já passou e
+  /// ninguém registrou o desfecho.
+  ///
+  /// Compara `inicioPrevisto` (data **e** hora), não apenas `data` — uma sessão
+  /// marcada para hoje às 14h não está vencida às 9h da manhã. As telas devem
+  /// chamar este método em vez de comparar datas na mão; foi o que fazia o
+  /// contador de pendências acusar a sessão do dia desde a meia-noite.
   bool estaAtrasado(DateTime referencia) {
     return estaAgendado && inicioPrevisto.isBefore(referencia);
   }

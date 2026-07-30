@@ -1,11 +1,11 @@
-# 🎨 Testes de Widget (172 testes)
+# 🎨 Testes de Widget (181 testes)
 
 Testes de componentes visuais: telas, componentes reutilizáveis e utilitários
 de UI, interação do usuário e estados visuais.
 
 ---
 
-## test/widgets/telas/ (151 testes | 13 arquivos)
+## test/widgets/telas/ (154 testes | 13 arquivos)
 
 Cada arquivo de teste representa uma tela da aplicação.
 
@@ -404,7 +404,7 @@ preferências, conta (logout) e logs de auditoria.
 
 ---
 
-### tela_historico_geral_evolucoes_test.dart (7 testes)
+### tela_historico_geral_evolucoes_test.dart (10 testes)
 
 **Tela:** Histórico geral de todas as evoluções clínicas, com busca e duas
 visualizações (lista e por paciente).
@@ -416,12 +416,38 @@ visualizações (lista e por paciente).
 ✓ Botão limpar restaura a lista completa
 ✓ Cores de condição (Piora e Faltou) são exibidas
 ✓ Visão por paciente ordena vários pacientes (comparador de nomes)
+✓ Tocar no card abre o modal de detalhes
+✓ Tocar no card dentro da visão por paciente abre o modal
+✓ Modal abre para evolução com mais de 24h (registro fechado, sem "Editar")
 ✓ Botão voltar aciona o retorno
 ```
 
+> Regressão: o card era um `FisioCard` sem `onTap`, então o registro não tinha
+> porta de entrada nenhuma e o texto cortado em 3 linhas ficava inacessível.
+
 ---
 
-## test/widgets/componentes/ (12 testes | 1 arquivo)
+## test/widgets/componentes/ (21 testes | 3 arquivos)
+
+### modal_detalhes_evolucao_test.dart (6 testes)
+
+**Componente:** Bottom sheet somente leitura de uma evolução — é o único lugar
+onde o texto clínico aparece inteiro (o card da lista corta em 3 linhas).
+
+```dart
+✓ Exibe o texto clínico completo, sem truncar (SelectableText, maxLines nulo)
+✓ Exibe paciente, data, condição e metadados (status, horário real, dor, PA/FC)
+✓ Exibe botão "Editar" quando a evolução tem menos de 24h
+✓ Abre mesmo com mais de 24h, com "Registro fechado — mais de 24h" no rodapé
+✓ Sem paciente não oferece edição, mesmo dentro das 24h
+✓ Evolução sem texto mostra "Registro sem descrição clínica."
+```
+
+> A janela de 24h (`Evolucao.janelaEdicao`) só decide se o botão "Editar"
+> aparece — nunca se o registro pode ser lido. Sem `Paciente` a edição é
+> impossível de qualquer forma: `TelaRegistroEvolucao` exige um não-nulo.
+
+---
 
 ### modal_detalhes_paciente_test.dart (12 testes)
 
@@ -447,6 +473,18 @@ anamnese, última evolução, rotas (Maps/Waze) e ações de editar/arquivar/res
 > de arquivar/restaurar, `EvolucoesComDados` para a última evolução e mock do
 > canal `url_launcher` para a falha de rota. O botão de rota é revelado com
 > `tester.ensureVisible` antes do toque.
+
+---
+
+### rodape_versao_test.dart (3 testes)
+
+**Componente:** Overlay que carimba a versão do app por cima de qualquer tela.
+
+```dart
+✓ Usa o valor padrão 0.0.0 quando APP_VERSION não é definido
+✓ Exibe a versão sobre o conteúdo da tela
+✓ Não intercepta toques (IgnorePointer)
+```
 
 ---
 
@@ -534,8 +572,9 @@ flutter test test/widgets/telas/tela_pacientes_test.dart
 | Sessões/Agenda | ✅ | 10 | — |
 | Financeiro | ✅ | 8 | — |
 | Configurações | ✅ | 14 | — |
-| Histórico Evoluções | ✅ | 7 | — |
+| Histórico Evoluções | ✅ | 10 | tap no card abre o modal, inclusive >24h |
+| Modal Detalhes Evolução | ✅ | 6 | Leitura completa, edição só dentro das 24h |
 | Modal Detalhes Paciente | ✅ | 12 | — |
 | Rodapé Versão | ✅ | 3 | Overlay de versão |
 | Ações de Agendamento | ✅ | 6 | — |
-| **Total** | **✅** | **172** | Telas principais + componentes/utilitários |
+| **Total** | **✅** | **181** | Telas principais + componentes/utilitários |

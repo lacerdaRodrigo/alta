@@ -74,6 +74,7 @@ fisio-home-care/
 │   │
 │   ├── componentes/
 │   │   ├── design_system.dart       # 🔑 Design tokens, cores, tipografia
+│   │   ├── modal_detalhes_evolucao.dart  # Bottom sheet evolução (somente leitura)
 │   │   ├── modal_detalhes_paciente.dart  # Bottom sheet detalhes paciente
 │   │   └── rodape_versao.dart       # Overlay de versão do app
 │   │
@@ -107,13 +108,13 @@ fisio-home-care/
 │       └── mensagens_erro_google.dart    # Mapear erros Google
 │
 ├── test/
-│   ├── unitarios/                   # 123 testes — lógica pura
+│   ├── unitarios/                   # 128 testes — lógica pura
 │   │   ├── auxiliares/
 │   │   │   └── fakes.dart           # Mocks reutilizados
 │   │   ├── modelos/
 │   │   │   ├── paciente_test.dart           (9 testes)
 │   │   │   ├── agendamento_test.dart        (10 testes)
-│   │   │   └── evolucao_test.dart           (6 testes)
+│   │   │   └── evolucao_test.dart           (11 testes)
 │   │   ├── servicos/
 │   │   │   └── preferencias_test.dart       (5 testes)
 │   │   └── utilitarios/
@@ -123,9 +124,10 @@ fisio-home-care/
 │   │       ├── gerador_id_test.dart         (8 testes — 100% cobertura)
 │   │       └── mensagens_erro_google_test.dart (7 testes — diagnóstico de login)
 │   │
-│   └── widgets/                     # 172 testes — UI + componentes
+│   └── widgets/                     # 181 testes — UI + componentes
 │       ├── componentes/
-│       │   ├── modal_detalhes_paciente_test.dart   (12 testes)
+│       │   ├── modal_detalhes_evolucao_test.dart   (6 testes)
+    │   ├── modal_detalhes_paciente_test.dart   (12 testes)
 │       │   └── rodape_versao_test.dart             (3 testes)
 │       ├── utilitarios/
 │       │   └── acoes_agendamento_test.dart         (6 testes)
@@ -142,7 +144,7 @@ fisio-home-care/
 │           ├── tela_sessoes_test.dart                (10 testes)
 │           ├── tela_nova_sessao_test.dart             (9 testes)
 │           ├── tela_configuracoes_test.dart          (14 testes)
-│           └── tela_historico_geral_evolucoes_test.dart (7 testes)
+│           └── tela_historico_geral_evolucoes_test.dart (10 testes)
 │
 ├── documentacao/
 │   ├── MODELO_DADOS.md              # Estrutura das 5 abas da planilha
@@ -156,9 +158,9 @@ fisio-home-care/
 │   ├── chaves.md                    # (no .gitignore) — credenciais
 │   └── testes/
 │       ├── README.md                # Índice de testes
-│       ├── VISAO_GERAL.md           # Overview 295 testes
+│       ├── VISAO_GERAL.md           # Overview 309 testes
 │       ├── UNITARIOS.md             # Detalhe dos 123 unitários
-│       └── WIDGETS.md               # Detalhe dos 172 widgets
+│       └── WIDGETS.md               # Detalhe dos 181 widgets
 │
 ├── QA/
 │   └── qa.md                        # Script QA manual (NOT E2E automatizado)
@@ -199,6 +201,19 @@ Planilha: `__saas_fisio_db__` (na conta Google do fisioterapeuta)
 - `Paciente.indicesColunas` (lib/modelos/paciente.dart:L30)
 - `Agendamento.indicesColunas` (lib/modelos/agendamento.dart:L20)
 - `VersaoEsquema.obterIndicesColunas(versao)` (lib/servicos/versao_esquema.dart:L45)
+
+### ⚠️ Janela de 24h da evolução
+
+`Evolucao.janelaEdicao` (`lib/modelos/evolucao.dart`) é a **fonte única** da regra.
+Use `evolucao.editavel` / `evolucao.editavelEm(agora)`; não reescreva a comparação
+de horas na UI (já esteve duplicada em duas telas).
+
+- A janela bloqueia **edição**, nunca **visualização**. Registro fechado continua
+  legível pelo `mostrarModalDetalhesEvolucao` e pela timeline do paciente. Prontuário
+  que não pode ser lido não é prontuário.
+- `deLinhaPlanilha` cai em `dataAtendimento` quando `Data_Registro` está vazia. Não
+  troque por `DateTime.now()`: a linha renasceria dentro da janela a cada
+  carregamento e a evolução ficaria editável para sempre.
 
 ---
 
@@ -286,19 +301,19 @@ Paciente.calcularIdade()   // ✓ delega para UtilitariosData
 
 ---
 
-## Testes (295 testes automatizados)
+## Testes (309 testes automatizados)
 
 ### Estrutura
 
 ```
 test/
-├── unitarios/  (123 testes)
+├── unitarios/  (128 testes)
 │   ├── auxiliares/     — fakes.dart (mocks reutilizados)
 │   ├── modelos/        — 25 testes (serialização, transformação)
 │   ├── servicos/       — 5 testes (preferencias)
 │   └── utilitarios/    — 93 testes (validadores, data, CPF, gerador_id, erros do Google)
 │
-└── widgets/    (172 testes)
+└── widgets/    (181 testes)
     ├── telas/        — 13 telas principais (UI, interação)
     ├── componentes/  — modal de detalhes do paciente + rodapé versão
     └── utilitarios/  — ações de agendamento
@@ -331,7 +346,7 @@ flutter test --coverage
 ✅ **Validação de entrada** — 55 testes (CPF, telefone, nome, data)  
 ✅ **Modelos** — 25 testes (serialização, cópia, status)  
 ✅ **Utilitários** — 31 testes (idade, formatação, geração de ID)  
-✅ **UI + Interação** — 172 testes (13 telas principais + componentes/utilitários)  
+✅ **UI + Interação** — 181 testes (13 telas principais + componentes/utilitários)  
 
 ❌ **Não coberto:**
 - Google Sheets API real (usaria quota, seria lento)
@@ -524,7 +539,7 @@ make release-prod  # mescla develop → master → dispara deploy de produção 
 | `documentacao/ESPECIFICACOES_TELAS.md` | Requisitos funcionais das telas | ✅ |
 | `documentacao/SEGURANCA_E_DADOS.md` | LGPD, OAuth, modelo BYODB | ✅ |
 | `documentacao/IMPLEMENTAR.md` | Roadmap priorizado | ✅ |
-| `documentacao/testes/` | 295 testes automatizados | ✅ |
+| `documentacao/testes/` | 309 testes automatizados | ✅ |
 | `documentacao/CI_CD.md` | Pipeline GitHub Actions: fluxo, secrets, uso e troubleshooting | ✅ |
 | `QA/qa.md` | Script QA manual (não é E2E) | ✅ |
 

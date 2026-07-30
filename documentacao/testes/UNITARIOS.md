@@ -1,4 +1,4 @@
-# 📁 Testes Unitários (123 testes)
+# 📁 Testes Unitários (128 testes)
 
 Lógica pura: validação de entrada, transformação de dados, cálculos.
 
@@ -172,7 +172,7 @@ Persistência local via SharedPreferences (ID da planilha).
 
 ---
 
-## test/unitarios/modelos/ (25 testes)
+## test/unitarios/modelos/ (30 testes)
 
 Serialização, transformação e comportamento dos modelos de dados.
 
@@ -209,9 +209,9 @@ Modelo Agendamento: sessões, desfechos, horários.
 ✓ cancelamentos e faltas devem ser desfechos
 ```
 
-### evolucao_test.dart (6 testes)
+### evolucao_test.dart (11 testes)
 
-Modelo Evolução: registros clínicos, protocolos.
+Modelo Evolução: registros clínicos, protocolos e a janela de 24h.
 
 ```dart
 ✓ Gera timestamp automático
@@ -220,7 +220,17 @@ Modelo Evolução: registros clínicos, protocolos.
 ✓ paraMapaPlanilha() com 14 colunas
 ✓ deLinhaPlanilha() desserializa corretamente
 ✓ Preserva texto clínico após cópia
+✓ editavelEm é verdadeiro faltando um minuto para as 24h
+✓ editavelEm é falso exatamente às 24h
+✓ editavelEm é falso muito depois da janela
+✓ deLinhaPlanilha usa dataAtendimento quando Data_Registro está vazio
+✓ deLinhaPlanilha usa dataAtendimento quando Data_Registro é inválida
 ```
+
+> `editavelEm(agora)` recebe o instante por parâmetro para testar a borda das
+> 24h sem depender do relógio do sistema. O fallback de `Data_Registro` é
+> regressão: caindo em `DateTime.now()`, a linha renascia dentro da janela a
+> cada carregamento e a evolução ficava editável para sempre.
 
 ---
 

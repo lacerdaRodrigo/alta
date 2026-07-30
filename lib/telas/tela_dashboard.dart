@@ -74,6 +74,7 @@ class _TelaDashboardState extends ConsumerState<TelaDashboard> {
             context,
             MaterialPageRoute(builder: (_) => const TelaConfiguracoes()),
           ),
+          onAbrirSessao: (a) => _abrirAcoesAgendamento(context, a),
         );
       } else if (carregamento.possuiErro) {
         corpo = _ErroTab(mensagem: carregamento.mensagemErro);
@@ -129,10 +130,15 @@ class _HomeTab extends ConsumerWidget {
   final ValueChanged<int>? onNavegar;
   final VoidCallback? onConfiguracoes;
 
+  /// Abre o menu de desfechos da sessão. A pendência é mostrada aqui, então
+  /// precisa ser resolvível daqui — antes só a aba Sessões respondia ao toque.
+  final ValueChanged<Agendamento>? onAbrirSessao;
+
   const _HomeTab({
     required this.nomeUsuario,
     this.onNavegar,
     this.onConfiguracoes,
+    this.onAbrirSessao,
   });
 
   @override
@@ -147,9 +153,7 @@ class _HomeTab extends ConsumerWidget {
       ..sort((a, b) => a.horaInicio.compareTo(b.horaInicio));
 
     final ativos = pacientes.where((p) => p.estaAtivo).length;
-    final pendencias = agendamentos
-        .where((a) => a.estaAgendado && a.data.isBefore(hoje))
-        .length;
+    final pendencias = agendamentos.where((a) => a.estaAtrasado(hoje)).length;
 
     final saudacao = _saudacao(hoje.hour);
     final mapaPacientes = {for (final p in pacientes) p.idPaciente: p.nome};
@@ -278,7 +282,7 @@ class _HomeTab extends ConsumerWidget {
                         )
                       else
                         ...doDia.map((s) => _linhaAgenda(
-                            s, mapaPacientes[s.idPaciente] ?? 'Paciente')),
+                            s, mapaPacientes[s.idPaciente] ?? 'Paciente', hoje)),
                     ],
                   ),
                 ),
@@ -290,13 +294,19 @@ class _HomeTab extends ConsumerWidget {
     );
   }
 
-  Widget _linhaAgenda(Agendamento s, String nome) {
-    final cor = s.foiRealizado ? FisioCores.success : FisioCores.info;
-    final status = s.foiRealizado ? 'Realizado' : 'Agendado';
+  Widget _linhaAgenda(Agendamento s, String nome, DateTime agora) {
+    // "Vencida" descreve o horário, não o que aconteceu: quem decide entre
+    // Realizado / Faltou / Cancelado é o profissional, pelo menu de ações.
+    final (status, cor) = switch (s) {
+      _ when s.foiRealizado => ('Realizado', FisioCores.success),
+      _ when s.estaAtrasado(agora) => ('Vencida', FisioCores.warning),
+      _ => ('Agendado', FisioCores.info),
+    };
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: FisioCard(
         padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+        onTap: onAbrirSessao == null ? null : () => onAbrirSessao!(s),
         child: Row(
           children: [
             SizedBox(

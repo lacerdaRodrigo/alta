@@ -1,6 +1,6 @@
 # 📋 Testes Automatizados — Visão Geral
 
-**Status:** ✅ 295 testes passando
+**Status:** ✅ 309 testes passando
 
 ---
 
@@ -10,12 +10,12 @@ O projeto utiliza **apenas testes unitários e de widget** (sem E2E automatizado
 
 | Categoria | Quantidade | % | Focos |
 |---|---|---|---|
-| **Unit — Utilitários** | 93 | 32% | Validadores, formatadores, gerador de IDs |
-| **Unit — Modelos** | 25 | 9% | Serialização, transformação, cópia |
+| **Unit — Utilitários** | 93 | 30% | Validadores, formatadores, gerador de IDs |
+| **Unit — Modelos** | 30 | 10% | Serialização, transformação, cópia |
 | **Unit — Serviços** | 5 | 2% | Preferências (SharedPreferences) |
-| **Widget — Telas** | 151 | 51% | UI, interação, estados visuais |
-| **Widget — Componentes/Utilitários** | 21 | 7% | Modal de detalhes, rodapé versão, ações de agendamento |
-| **TOTAL** | **295** | **100%** | — |
+| **Widget — Telas** | 154 | 50% | UI, interação, estados visuais |
+| **Widget — Componentes/Utilitários** | 27 | 9% | Modal de detalhes, rodapé versão, ações de agendamento |
+| **TOTAL** | **309** | **100%** | — |
 
 ---
 
@@ -23,12 +23,12 @@ O projeto utiliza **apenas testes unitários e de widget** (sem E2E automatizado
 
 ```
 test/
-├── unitarios/              (123 testes — lógica pura)
+├── unitarios/              (128 testes — lógica pura)
 │   ├── auxiliares/         
 │   │   └── fakes.dart                    — Mocks reutilizados
 │   ├── modelos/
 │   │   ├── agendamento_test.dart        (10 testes)
-│   │   ├── evolucao_test.dart           (6 testes)
+│   │   ├── evolucao_test.dart           (11 testes)
 │   │   └── paciente_test.dart           (9 testes)
 │   ├── servicos/
 │   │   └── preferencias_test.dart       (5 testes)
@@ -37,8 +37,9 @@ test/
 │       ├── validador_cpf_test.dart      (9 testes)
 │       ├── validadores_test.dart        (46 testes)
 │       └── gerador_id_test.dart         (8 testes)
-└── widgets/                (172 testes — UI + componentes)
+└── widgets/                (181 testes — UI + componentes)
     ├── componentes/
+    │   ├── modal_detalhes_evolucao_test.dart   (6 testes)
     │   ├── modal_detalhes_paciente_test.dart   (12 testes)
     │   └── rodape_versao_test.dart             (3 testes)
     ├── utilitarios/
@@ -52,7 +53,7 @@ test/
         ├── tela_editar_sessao_test.dart      (7 testes — editar/reagendar sessão)
         ├── tela_financeiro_test.dart          (8 testes — resumo financeiro mensal)
         ├── tela_configuracoes_test.dart       (14 testes)
-        ├── tela_historico_geral_evolucoes_test.dart (7 testes)
+        ├── tela_historico_geral_evolucoes_test.dart (10 testes)
         ├── tela_pacientes_test.dart          (12 testes)
         ├── tela_registro_evolucao_test.dart  (23 testes — inclui timeline e ditado por voz)
         ├── tela_sessoes_test.dart           (10 testes)
@@ -64,7 +65,7 @@ test/
 ## Como Rodar
 
 ```bash
-# Todos os 295 testes
+# Todos os 309 testes
 flutter test
 
 # Apenas unitários

@@ -404,9 +404,11 @@ class FisioStatusPill extends StatelessWidget {
       c = FisioCores.success;
     } else if (s.contains('agend')) {
       c = FisioCores.info;
-    } else if (s.contains('pend')) {
+    } else if (s.contains('venc') || s.contains('pend')) {
       c = FisioCores.warning;
     } else if (s.contains('cancel')) {
+      c = FisioCores.danger;
+    } else if (s.contains('falt')) {
       c = FisioCores.danger;
     } else {
       c = FisioCores.textSecondary;

@@ -229,10 +229,7 @@ class _ItemTimeline extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (DateTime.now()
-                              .difference(evolucao.dataRegistro)
-                              .inHours <
-                          24)
+                      if (evolucao.editavel)
                         TextButton(
                           onPressed: () {
                             Navigator.push(

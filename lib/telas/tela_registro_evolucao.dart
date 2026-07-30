@@ -52,10 +52,7 @@ class _TelaRegistroEvolucaoState extends ConsumerState<TelaRegistroEvolucao> {
 
   bool get _editavel {
     if (!_editando) return true;
-    final diff = DateTime.now().difference(
-      widget.evolucaoExistente!.dataRegistro,
-    );
-    return diff.inHours < 24;
+    return widget.evolucaoExistente!.editavel;
   }
 
   TimeOfDay _dateToTimeOfDay(DateTime data) =>

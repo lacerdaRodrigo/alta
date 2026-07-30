@@ -13,14 +13,14 @@ class TelaSessoes extends ConsumerStatefulWidget {
   ConsumerState<TelaSessoes> createState() => _TelaSessoesState();
 }
 
-enum _FiltroSessao { todas, hoje, futuras, pendentes, realizadas }
+enum _FiltroSessao { todas, hoje, futuras, vencidas, realizadas }
 
 class _TelaSessoesState extends ConsumerState<TelaSessoes> {
   late DateTime _mes;
   int _filtro = 0;
   String _busca = '';
 
-  static const _labels = ['Todas', 'Hoje', 'Futuras', 'Pendentes', 'Realizadas'];
+  static const _labels = ['Todas', 'Hoje', 'Futuras', 'Vencidas', 'Realizadas'];
 
   @override
   void initState() {
@@ -38,12 +38,13 @@ class _TelaSessoesState extends ConsumerState<TelaSessoes> {
       case _FiltroSessao.todas:
         return true;
       case _FiltroSessao.hoje:
-        return UtilitariosData.mesmoDia(a.data, hoje) &&
-            !(a.estaAgendado && a.inicioPrevisto.isBefore(hoje));
+        return UtilitariosData.mesmoDia(a.data, hoje) && !a.estaAtrasado(hoje);
       case _FiltroSessao.futuras:
         return a.data.isAfter(hoje);
-      case _FiltroSessao.pendentes:
-        return a.estaAgendado && a.data.isBefore(hoje);
+      case _FiltroSessao.vencidas:
+        // `estaAtrasado` compara data + hora: a sessão de hoje às 14h só entra
+        // aqui depois das 14h, não desde a meia-noite.
+        return a.estaAtrasado(hoje);
       case _FiltroSessao.realizadas:
         return a.foiRealizado;
     }
@@ -151,8 +152,8 @@ class _TelaSessoesState extends ConsumerState<TelaSessoes> {
   Widget _linha(Agendamento a, String nome) {
     final status = a.foiRealizado
         ? 'Realizado'
-        : (a.estaAgendado && a.data.isBefore(DateTime.now())
-            ? 'Pendente'
+        : (a.estaAtrasado(DateTime.now())
+            ? 'Vencida'
             : a.estaAgendado
                 ? 'Agendado'
                 : a.situacao);

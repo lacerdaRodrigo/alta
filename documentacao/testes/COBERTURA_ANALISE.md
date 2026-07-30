@@ -1,7 +1,7 @@
 # 📊 Análise de Cobertura de Testes
 
 > ⚠️ **ARQUIVADO — snapshot histórico de 2026-06-16.** Todas as 12 telas
-> principais já têm testes de widget hoje (295 testes no total). Para os
+> principais já têm testes de widget hoje (309 testes no total). Para os
 > números atuais, veja [`VISAO_GERAL.md`](./VISAO_GERAL.md). Este documento
 > fica só como registro de como a cobertura evoluiu (era 60% de telas
 > testadas nessa data) — não reflete o estado atual do projeto.

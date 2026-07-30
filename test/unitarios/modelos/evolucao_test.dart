@@ -166,5 +166,75 @@ void main() {
       expect(mapa['Pressao_Arterial'], equals(''));
       expect(mapa['Frequencia_Cardiaca'], equals(''));
     });
+
+    group('janela de edição de 24h', () {
+      Evolucao comRegistroEm(DateTime dataRegistro) => Evolucao(
+        idEvolucao: 'E007',
+        idPaciente: 'P001',
+        idAgendamento: 'A007',
+        dataAtendimento: dataBase,
+        evolucaoTexto: 'Teste',
+        horarioInicioReal: horarioInicio,
+        horarioFimReal: horarioFim,
+        dataRegistro: dataRegistro,
+      );
+
+      test('editavelEm é verdadeiro faltando um minuto para as 24h', () {
+        final registro = DateTime(2026, 6, 9, 10);
+        final agora = registro.add(const Duration(hours: 23, minutes: 59));
+
+        expect(comRegistroEm(registro).editavelEm(agora), isTrue);
+      });
+
+      test('editavelEm é falso exatamente às 24h', () {
+        final registro = DateTime(2026, 6, 9, 10);
+        final agora = registro.add(const Duration(hours: 24));
+
+        expect(comRegistroEm(registro).editavelEm(agora), isFalse);
+      });
+
+      test('editavelEm é falso muito depois da janela', () {
+        final registro = DateTime(2026, 6, 9, 10);
+        final agora = registro.add(const Duration(days: 30));
+
+        expect(comRegistroEm(registro).editavelEm(agora), isFalse);
+      });
+    });
+
+    test(
+      'deLinhaPlanilha usa dataAtendimento quando Data_Registro está vazio',
+      () {
+        // Regressão: caindo em DateTime.now() a evolução renascia dentro da
+        // janela das 24h a cada carregamento e ficava editável para sempre.
+        final linha = [
+          'E008',
+          'P005',
+          'A008',
+          '15/03/2024',
+          'Linha sem data de registro.',
+          '',
+        ];
+
+        final result = Evolucao.deLinhaPlanilha(linha);
+
+        expect(result.dataRegistro, equals(DateTime(2024, 3, 15)));
+        expect(result.editavelEm(DateTime(2026, 6, 9)), isFalse);
+      },
+    );
+
+    test('deLinhaPlanilha usa dataAtendimento quando Data_Registro é inválida', () {
+      final linha = [
+        'E009',
+        'P005',
+        'A009',
+        '15/03/2024',
+        'Linha com data de registro corrompida.',
+        'não é uma data',
+      ];
+
+      final result = Evolucao.deLinhaPlanilha(linha);
+
+      expect(result.dataRegistro, equals(DateTime(2024, 3, 15)));
+    });
   });
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../componentes/design_system.dart';
+import '../componentes/modal_detalhes_evolucao.dart';
 import '../modelos/evolucao.dart';
 import '../modelos/paciente.dart';
 import '../provedores/provedores_dados.dart';
@@ -176,9 +177,15 @@ class _TelaHistoricoGeralEvolucoesState
       itemCount: evolucoes.length,
       itemBuilder: (context, index) {
         final evolucao = evolucoes[index];
+        final paciente = pacientes[evolucao.idPaciente];
         return _CardEvolucaoGeral(
           evolucao: evolucao,
-          paciente: pacientes[evolucao.idPaciente],
+          paciente: paciente,
+          onTap: () => mostrarModalDetalhesEvolucao(
+            context,
+            evolucao: evolucao,
+            paciente: paciente,
+          ),
         );
       },
     );
@@ -274,23 +281,15 @@ class _EstadoVazio extends StatelessWidget {
 class _CardEvolucaoGeral extends StatelessWidget {
   final Evolucao evolucao;
   final Paciente? paciente;
+  final VoidCallback onTap;
 
-  const _CardEvolucaoGeral({required this.evolucao, required this.paciente});
+  const _CardEvolucaoGeral({
+    required this.evolucao,
+    required this.paciente,
+    required this.onTap,
+  });
 
-  Color get _corCondicao {
-    switch (evolucao.condicaoPaciente) {
-      case 'Melhora':
-        return FisioCores.success;
-      case 'Estável':
-        return FisioCores.warning;
-      case 'Piora':
-        return FisioCores.danger;
-      case 'Faltou':
-        return FisioCores.textMuted;
-      default:
-        return FisioCores.info;
-    }
-  }
+  Color get _corCondicao => corCondicaoEvolucao(evolucao.condicaoPaciente);
 
   @override
   Widget build(BuildContext context) {
@@ -298,6 +297,7 @@ class _CardEvolucaoGeral extends StatelessWidget {
 
     return FisioCard(
       margin: const EdgeInsets.only(bottom: 12),
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -436,7 +436,15 @@ class _GrupoPacienteEvolucoes extends StatelessWidget {
             ),
             children: [
               for (final evolucao in evolucoes)
-                _CardEvolucaoGeral(evolucao: evolucao, paciente: paciente),
+                _CardEvolucaoGeral(
+                  evolucao: evolucao,
+                  paciente: paciente,
+                  onTap: () => mostrarModalDetalhesEvolucao(
+                    context,
+                    evolucao: evolucao,
+                    paciente: paciente,
+                  ),
+                ),
             ],
           ),
         ),
