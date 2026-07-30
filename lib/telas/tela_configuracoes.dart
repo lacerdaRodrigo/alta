@@ -76,6 +76,7 @@ class _TelaConfiguracoesState extends ConsumerState<TelaConfiguracoes> {
     final nome = auth.sessao?.nomeUsuario ?? 'Profissional';
     final email = auth.sessao?.email ?? '';
     final planilhaId = ref.watch(provedorPlanilhaId);
+    final duplicadas = ref.watch(provedorPlanilhasDuplicadas);
 
     return Material(
       color: FisioCores.surface,
@@ -187,6 +188,10 @@ class _TelaConfiguracoesState extends ConsumerState<TelaConfiguracoes> {
                                     : FisioCores.warning),
                           ],
                         ),
+                        if (duplicadas.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          _avisoDuplicatas(duplicadas.length),
+                        ],
                         const SizedBox(height: 12),
                         Row(
                           children: [
@@ -301,6 +306,47 @@ class _TelaConfiguracoesState extends ConsumerState<TelaConfiguracoes> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Aviso de que existe mais de uma planilha `__saas_fisio_db__` no Drive.
+  ///
+  /// O app usa a mais recente. Sem esse aviso o usuário não teria como
+  /// perceber que os dados novos foram para outra planilha — a antiga
+  /// simplesmente parece ter parado de receber sessões.
+  Widget _avisoDuplicatas(int quantidade) {
+    final plural = quantidade > 1;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+      decoration: BoxDecoration(
+        color: FisioCores.warning.withValues(alpha: 0.11),
+        borderRadius: BorderRadius.circular(11),
+        border: Border.all(color: FisioCores.warning.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.warning_amber_rounded,
+              color: FisioCores.warning, size: 17),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              plural
+                  ? 'Há mais $quantidade planilhas com este nome no seu Drive. '
+                        'O app está usando a mais recente; apague ou renomeie '
+                        'as outras para evitar dados em duas bases.'
+                  : 'Há outra planilha com este nome no seu Drive. O app está '
+                        'usando a mais recente; apague ou renomeie a outra para '
+                        'evitar dados em duas bases.',
+              style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  height: 1.35,
+                  color: Color(0xFF7C5A11)),
+            ),
+          ),
+        ],
       ),
     );
   }

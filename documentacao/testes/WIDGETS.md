@@ -1,11 +1,11 @@
-# 🎨 Testes de Widget (181 testes)
+# 🎨 Testes de Widget (191 testes)
 
 Testes de componentes visuais: telas, componentes reutilizáveis e utilitários
 de UI, interação do usuário e estados visuais.
 
 ---
 
-## test/widgets/telas/ (154 testes | 13 arquivos)
+## test/widgets/telas/ (164 testes | 13 arquivos)
 
 Cada arquivo de teste representa uma tela da aplicação.
 
@@ -41,7 +41,7 @@ traçado de ECG e handoff para o login.
 
 ---
 
-### tela_dashboard_test.dart (16 testes)
+### tela_dashboard_test.dart (19 testes)
 
 **Tela:** Início (home após login) — cabeçalho, stat tiles, agenda do dia,
 pendências, navegação inferior e FAB.
@@ -57,14 +57,18 @@ pendências, navegação inferior e FAB.
 ✓ Stat tiles exibem pacientes ativos e pendências
 ✓ Agenda vazia exibe estado vazio com mensagem
 ✓ Link "Ver tudo" navega para aba Sessões
-✓ Link Histórico de evoluções navega para a tela
+✓ Início não exibe mais o card de histórico de evoluções
 
 // Navegação inferior e FAB
 ✓ Barra inferior alterna abas
 ✓ FAB na aba Pacientes abre cadastro
+✓ Tocar em paciente abre modal de detalhes
 
 // Agenda e pendências
 ✓ Lista sessões de hoje na agenda
+✓ Sessão com horário passado aparece como Vencida
+✓ Sessão de hoje ainda por vir não conta como pendência
+✓ Card da agenda responde ao toque
 ✓ Contador de sessões do dia exibido no header
 ✓ Pendências são contabilizadas no stat tile
 
@@ -117,7 +121,7 @@ valor e observações.
 
 ---
 
-### tela_login_test.dart (9 testes)
+### tela_login_test.dart (13 testes)
 
 **Tela:** Login com Google — checkbox LGPD, links legais, botão de entrada.
 
@@ -131,6 +135,12 @@ valor e observações.
 ✓ Tocar de novo enquanto carrega não chama o serviço uma segunda vez
 ✓ Login que emite conta e sessão navega para o Dashboard uma única vez
 ✓ Onde o login não é programático (web) não chama entrar nem trava o botão
+
+// Links legais
+✓ Tocar em "Termos de Uso" abre a página publicada
+✓ Tocar em "Política de Privacidade" abre a página publicada
+✓ Abrir o link não marca o checkbox de termos
+✓ Falha ao abrir o link mostra a URL no snackbar
 ```
 
 > Usa `ServicoAutenticacaoGoogleControlavel` (fake com `Completer`) para
@@ -141,6 +151,13 @@ valor e observações.
 > login parte do botão renderizado pelo GIS: `entrar()` não pode ser chamado e o
 > estado de carregamento precisa ser desfeito, senão o botão do Google ficaria
 > coberto por um `IgnorePointer` permanente.
+>
+> **Os links legais são tocados por coordenada**, não por `find.text`: o texto do
+> consentimento é um único `RichText`, então `tester.tap(find.text(...))` acerta o
+> parágrafo inteiro e passaria mesmo sem `recognizer` nenhum — que era exatamente
+> o bug (span colorido, sem toque). O helper usa `getOffsetForCaret` para cair
+> sobre o span certo. O mock do canal `plugins.flutter.io/url_launcher` registra
+> as URLs pedidas.
 >
 > `ServicoAutenticacaoGoogleDuplaEmissao` reproduz o pior caso do serviço real:
 > um único login publica em `sessoesConectadas` **e** em `contasConectadas`,
@@ -372,7 +389,7 @@ realizadas, filtro por mês e lista de sessões com visão por paciente.
 
 ---
 
-### tela_configuracoes_test.dart (14 testes)
+### tela_configuracoes_test.dart (17 testes)
 
 **Tela:** Configurações — base de dados (planilha), valor padrão da sessão,
 preferências, conta (logout) e logs de auditoria.
@@ -394,6 +411,9 @@ preferências, conta (logout) e logs de auditoria.
 ✓ Confirmar logout navega para o login
 ✓ Logs de auditoria são copiados ao tocar exportar
 ✓ Abrir planilha com falha exibe snackbar
+✓ Sem duplicatas não exibe aviso na base de dados
+✓ Duplicata no Drive vira aviso visível
+✓ Duas duplicatas usam a redação no plural
 ```
 
 > Usa `FakeRepoConfig` / `RepoConfigQueFalha` para os caminhos de sucesso e
@@ -401,6 +421,11 @@ preferências, conta (logout) e logs de auditoria.
 > auditoria e `_PlanilhaIdFixo` para o ID da planilha. A abertura da planilha
 > é testada via mock do canal `plugins.flutter.io/url_launcher` retornando
 > `false` (falha de abertura).
+>
+> O aviso de duplicata vem de `provedorPlanilhasDuplicadas`
+> (`_PlanilhasDuplicadasFixas`). Ele existe porque o app grava sempre na
+> planilha mais recente: sem alerta, a base antiga apenas "para de receber
+> sessões" e nada na tela explica o porquê.
 
 ---
 
@@ -577,4 +602,4 @@ flutter test test/widgets/telas/tela_pacientes_test.dart
 | Modal Detalhes Paciente | ✅ | 12 | — |
 | Rodapé Versão | ✅ | 3 | Overlay de versão |
 | Ações de Agendamento | ✅ | 6 | — |
-| **Total** | **✅** | **181** | Telas principais + componentes/utilitários |
+| **Total** | **✅** | **191** | Telas principais + componentes/utilitários |

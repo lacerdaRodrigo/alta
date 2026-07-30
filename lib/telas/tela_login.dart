@@ -1,8 +1,13 @@
+import 'dart:developer' as developer;
+
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../componentes/botao_google_renderizado.dart';
 import '../componentes/design_system.dart';
 import '../provedores/provedor_autenticacao.dart';
+import '../utilitarios/links_legais.dart';
 import 'tela_dashboard.dart';
 
 class TelaLogin extends ConsumerStatefulWidget {
@@ -17,9 +22,22 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
   bool _navegou = false;
   ProviderSubscription<EstadoAutenticacao>? _assinaturaAuth;
 
+  /// Reconhecedores dos links legais dentro do `Text.rich`.
+  ///
+  /// Um `TextSpan` não recebe toque sozinho — sem `recognizer` ele é só texto
+  /// colorido, que foi exatamente o problema: dava para aceitar os termos sem
+  /// ter como lê-los. Ficam em campos porque `TapGestureRecognizer` precisa de
+  /// `dispose()`; criá-los no `build` vazaria um por quadro.
+  late final TapGestureRecognizer _tapPrivacidade;
+  late final TapGestureRecognizer _tapTermos;
+
   @override
   void initState() {
     super.initState();
+    _tapPrivacidade = TapGestureRecognizer()
+      ..onTap = () => _abrirLink(LinksLegais.politicaPrivacidade);
+    _tapTermos = TapGestureRecognizer()
+      ..onTap = () => _abrirLink(LinksLegais.termosDeUso);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _ouvirEstadoAutenticacao();
     });
@@ -28,7 +46,38 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
   @override
   void dispose() {
     _assinaturaAuth?.close();
+    _tapPrivacidade.dispose();
+    _tapTermos.dispose();
     super.dispose();
+  }
+
+  Future<void> _abrirLink(String url) async {
+    try {
+      // `externalApplication` abre em nova aba no web e no navegador do sistema
+      // no Android — em nenhum dos dois o usuário perde a tela de login nem o
+      // estado do checkbox.
+      final abriu = await launchUrl(
+        Uri.parse(url),
+        mode: LaunchMode.externalApplication,
+      );
+      if (!abriu && mounted) {
+        _avisarFalhaAoAbrir(url);
+      }
+    } catch (e, st) {
+      developer.log(
+        'Falha ao abrir link legal: $url',
+        error: e,
+        stackTrace: st,
+        name: 'TelaLogin',
+      );
+      if (mounted) _avisarFalhaAoAbrir(url);
+    }
+  }
+
+  void _avisarFalhaAoAbrir(String url) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Não foi possível abrir o link. Acesse $url')),
+    );
   }
 
   void _ouvirEstadoAutenticacao() {
@@ -193,33 +242,41 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
                               ),
                             ),
                             const SizedBox(width: 11),
-                            const Expanded(
+                            Expanded(
                               child: Text.rich(
                                 TextSpan(
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 12,
                                     height: 1.5,
                                     fontWeight: FontWeight.w500,
                                     color: FisioCores.textSecondary,
                                   ),
                                   children: [
-                                    TextSpan(text: 'Li e concordo com a '),
+                                    const TextSpan(
+                                      text: 'Li e concordo com a ',
+                                    ),
                                     TextSpan(
                                       text: 'Política de Privacidade',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: FisioCores.primary,
                                         fontWeight: FontWeight.w700,
+                                        decoration: TextDecoration.underline,
+                                        decorationColor: FisioCores.primary,
                                       ),
+                                      recognizer: _tapPrivacidade,
                                     ),
-                                    TextSpan(text: ' e os '),
+                                    const TextSpan(text: ' e os '),
                                     TextSpan(
                                       text: 'Termos de Uso',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         color: FisioCores.primary,
                                         fontWeight: FontWeight.w700,
+                                        decoration: TextDecoration.underline,
+                                        decorationColor: FisioCores.primary,
                                       ),
+                                      recognizer: _tapTermos,
                                     ),
-                                    TextSpan(
+                                    const TextSpan(
                                       text:
                                           ', e autorizo o tratamento dos meus dados conforme a LGPD.',
                                     ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../modelos/agendamento.dart';
 import '../modelos/evolucao.dart';
 import '../modelos/paciente.dart';
+import '../servicos/servico_google_drive.dart';
 import '../servicos/servico_repositorio_dados.dart';
 import 'provedor_autenticacao.dart';
 
@@ -105,6 +106,14 @@ class PlanilhaIdNotifier extends Notifier<String?> {
   void definir(String? id) => state = id;
 }
 
+/// Planilhas com o nome da base que existem no Drive além da que está em uso.
+class PlanilhasDuplicadasNotifier extends Notifier<List<PlanilhaBanco>> {
+  @override
+  List<PlanilhaBanco> build() => const [];
+
+  void definir(List<PlanilhaBanco> planilhas) => state = planilhas;
+}
+
 final provedorRepositorioDados = Provider<RepositorioDadosGoogle?>((ref) {
   final sessao = ref.watch(provedorAutenticacao).sessao;
   if (sessao == null) {
@@ -143,6 +152,10 @@ final provedorLogsAuditoria =
 final provedorPlanilhaId = NotifierProvider<PlanilhaIdNotifier, String?>(
   PlanilhaIdNotifier.new,
 );
+final provedorPlanilhasDuplicadas =
+    NotifierProvider<PlanilhasDuplicadasNotifier, List<PlanilhaBanco>>(
+      PlanilhasDuplicadasNotifier.new,
+    );
 
 void limparDados(WidgetRef ref) {
   ref.read(provedorCarregamentoDados.notifier).resetar();
@@ -153,6 +166,7 @@ void limparDados(WidgetRef ref) {
   ref.read(provedorValorSessaoPadrao.notifier).definir('150,00');
   ref.read(provedorLogsAuditoria.notifier).definir([]);
   ref.read(provedorPlanilhaId.notifier).definir(null);
+  ref.read(provedorPlanilhasDuplicadas.notifier).definir(const []);
 }
 
 /// Referências resolvidas uma única vez, antes de qualquer `await`.
@@ -171,6 +185,7 @@ class _DependenciasCarregamento {
   final ValorSessaoPadraoNotifier valorSessaoPadrao;
   final LogsAuditoriaNotifier logsAuditoria;
   final PlanilhaIdNotifier planilhaId;
+  final PlanilhasDuplicadasNotifier planilhasDuplicadas;
   final CarregamentoDadosNotifier carregamento;
 
   const _DependenciasCarregamento({
@@ -182,6 +197,7 @@ class _DependenciasCarregamento {
     required this.valorSessaoPadrao,
     required this.logsAuditoria,
     required this.planilhaId,
+    required this.planilhasDuplicadas,
     required this.carregamento,
   });
 
@@ -195,6 +211,7 @@ class _DependenciasCarregamento {
       valorSessaoPadrao: ref.read(provedorValorSessaoPadrao.notifier),
       logsAuditoria: ref.read(provedorLogsAuditoria.notifier),
       planilhaId: ref.read(provedorPlanilhaId.notifier),
+      planilhasDuplicadas: ref.read(provedorPlanilhasDuplicadas.notifier),
       carregamento: ref.read(provedorCarregamentoDados.notifier),
     );
   }
@@ -248,6 +265,7 @@ Future<void> _executarCarregamento(_DependenciasCarregamento deps) async {
   deps.valorSessaoPadrao.definir(dados.valorSessaoPadrao);
   deps.logsAuditoria.definir(dados.logsAuditoria);
   deps.planilhaId.definir(dados.planilhaId);
+  deps.planilhasDuplicadas.definir(dados.planilhasDuplicadas);
   deps.carregamento.sucesso();
 }
 

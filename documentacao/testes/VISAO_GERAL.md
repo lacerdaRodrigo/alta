@@ -1,6 +1,6 @@
 # 📋 Testes Automatizados — Visão Geral
 
-**Status:** ✅ 309 testes passando
+**Status:** ✅ 364 testes passando
 
 ---
 
@@ -10,12 +10,12 @@ O projeto utiliza **apenas testes unitários e de widget** (sem E2E automatizado
 
 | Categoria | Quantidade | % | Focos |
 |---|---|---|---|
-| **Unit — Utilitários** | 93 | 30% | Validadores, formatadores, gerador de IDs |
-| **Unit — Modelos** | 30 | 10% | Serialização, transformação, cópia |
-| **Unit — Serviços** | 5 | 2% | Preferências (SharedPreferences) |
-| **Widget — Telas** | 154 | 50% | UI, interação, estados visuais |
-| **Widget — Componentes/Utilitários** | 27 | 9% | Modal de detalhes, rodapé versão, ações de agendamento |
-| **TOTAL** | **309** | **100%** | — |
+| **Unit — Utilitários** | 93 | 26% | Validadores, formatadores, gerador de IDs |
+| **Unit — Modelos** | 30 | 8% | Serialização, transformação, cópia |
+| **Unit — Serviços** | 50 | 14% | Preferências, Drive, Sheets e repositório de dados (via `ServidorGoogleFake`) |
+| **Widget — Telas** | 164 | 45% | UI, interação, estados visuais |
+| **Widget — Componentes/Utilitários** | 27 | 8% | Modal de detalhes, rodapé versão, ações de agendamento |
+| **TOTAL** | **364** | **100%** | — |
 
 ---
 
@@ -23,21 +23,25 @@ O projeto utiliza **apenas testes unitários e de widget** (sem E2E automatizado
 
 ```
 test/
-├── unitarios/              (128 testes — lógica pura)
+├── unitarios/              (173 testes — lógica pura)
 │   ├── auxiliares/         
-│   │   └── fakes.dart                    — Mocks reutilizados
+│   │   ├── fakes.dart                    — Mocks reutilizados
+│   │   └── servidor_google_fake.dart     — Drive/Sheets falso no nível do HTTP
 │   ├── modelos/
 │   │   ├── agendamento_test.dart        (10 testes)
 │   │   ├── evolucao_test.dart           (11 testes)
 │   │   └── paciente_test.dart           (9 testes)
 │   ├── servicos/
-│   │   └── preferencias_test.dart       (5 testes)
+│   │   ├── preferencias_test.dart              (5 testes)
+│   │   ├── servico_google_drive_test.dart      (6 testes)
+│   │   ├── servico_google_sheets_test.dart     (10 testes)
+│   │   └── servico_repositorio_dados_test.dart (29 testes)
 │   └── utilitarios/
 │       ├── utilitarios_data_test.dart   (23 testes)
 │       ├── validador_cpf_test.dart      (9 testes)
 │       ├── validadores_test.dart        (46 testes)
 │       └── gerador_id_test.dart         (8 testes)
-└── widgets/                (181 testes — UI + componentes)
+└── widgets/                (191 testes — UI + componentes)
     ├── componentes/
     │   ├── modal_detalhes_evolucao_test.dart   (6 testes)
     │   ├── modal_detalhes_paciente_test.dart   (12 testes)
@@ -46,13 +50,13 @@ test/
     │   └── acoes_agendamento_test.dart         (6 testes)
     └── telas/
         ├── tela_splash_test.dart              (7 testes — abertura animada)
-        ├── tela_login_test.dart               (9 testes)
-        ├── tela_dashboard_test.dart           (16 testes)
+        ├── tela_login_test.dart               (13 testes)
+        ├── tela_dashboard_test.dart           (19 testes)
         ├── tela_cadastro_paciente_test.dart  (23 testes)
         ├── tela_editar_paciente_test.dart    (6 testes — campos travados + atualização)
         ├── tela_editar_sessao_test.dart      (7 testes — editar/reagendar sessão)
         ├── tela_financeiro_test.dart          (8 testes — resumo financeiro mensal)
-        ├── tela_configuracoes_test.dart       (14 testes)
+        ├── tela_configuracoes_test.dart       (17 testes)
         ├── tela_historico_geral_evolucoes_test.dart (10 testes)
         ├── tela_pacientes_test.dart          (12 testes)
         ├── tela_registro_evolucao_test.dart  (23 testes — inclui timeline e ditado por voz)
@@ -65,7 +69,7 @@ test/
 ## Como Rodar
 
 ```bash
-# Todos os 309 testes
+# Todos os 364 testes
 flutter test
 
 # Apenas unitários

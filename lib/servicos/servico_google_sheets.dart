@@ -194,7 +194,14 @@ class ServicoGoogleSheets {
         return 1;
       }
 
-      final versaoStr = valores[0].toString().trim();
+      // `values` vem como lista de linhas: [[valor]]. Usar `valores[0]` direto
+      // dava "[1]" no `toString()`, o parse falhava e **toda** planilha era
+      // tratada como versão 1 — inclusive uma de versão futura, que deveria
+      // ser recusada por `validarVersao`.
+      final primeiraLinha = valores.first;
+      final versaoStr = primeiraLinha.isEmpty
+          ? ''
+          : primeiraLinha.first.toString().trim();
       final versao = int.tryParse(versaoStr);
 
       if (versao == null) {

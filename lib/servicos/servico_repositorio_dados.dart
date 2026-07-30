@@ -20,6 +20,13 @@ class DadosCarregados {
   final List<String> logsAuditoria;
   final String planilhaId;
 
+  /// Planilhas com o nome da base encontradas além da que está em uso.
+  ///
+  /// Vazio no caso normal. Quando não está, o app escolheu a mais recente e a
+  /// tela de Configurações avisa — sem isso o usuário não teria como perceber
+  /// que passou a gravar em outra planilha.
+  final List<PlanilhaBanco> planilhasDuplicadas;
+
   const DadosCarregados({
     required this.pacientes,
     required this.agendamentos,
@@ -27,6 +34,7 @@ class DadosCarregados {
     required this.valorSessaoPadrao,
     required this.logsAuditoria,
     required this.planilhaId,
+    this.planilhasDuplicadas = const [],
   });
 }
 
@@ -34,13 +42,22 @@ class RepositorioDadosGoogle {
   final ServicoGoogleDrive _drive;
   final ServicoGoogleSheets _sheets;
   String? _planilhaId;
+  List<PlanilhaBanco> _planilhasDuplicadas = const [];
 
   RepositorioDadosGoogle(http.Client cliente)
     : _drive = ServicoGoogleDrive(cliente),
       _sheets = ServicoGoogleSheets(cliente);
 
+  /// Planilhas com o nome da base que existem além da que está em uso.
+  ///
+  /// Só é preenchido quando a busca no Drive realmente roda: se o ID veio do
+  /// cache ou das preferências, o app nem consulta o Drive e a lista fica
+  /// vazia.
+  List<PlanilhaBanco> get planilhasDuplicadas => _planilhasDuplicadas;
+
   void limparCache() {
     _planilhaId = null;
+    _planilhasDuplicadas = const [];
     Preferencias.limparPlanilhaId();
   }
 
@@ -77,7 +94,20 @@ class RepositorioDadosGoogle {
       }
     }
 
-    final existente = await _drive.buscarPlanilhaBanco();
+    final encontradas = await _drive.buscarPlanilhasBanco();
+    _planilhasDuplicadas = encontradas.length > 1
+        ? encontradas.sublist(1)
+        : const [];
+    if (_planilhasDuplicadas.isNotEmpty) {
+      developer.log(
+        'Há ${encontradas.length} planilhas chamadas '
+        '"${ServicoGoogleDrive.nomeBanco}" no Drive. Usando a mais recente '
+        '(${encontradas.first.id}); as outras serão ignoradas.',
+        name: 'RepositorioDadosGoogle',
+      );
+    }
+
+    final existente = encontradas.isEmpty ? null : encontradas.first.id;
     if (existente != null) {
       _planilhaId = existente;
       try {
@@ -160,6 +190,7 @@ class RepositorioDadosGoogle {
         ),
         logsAuditoria: logs,
         planilhaId: id,
+        planilhasDuplicadas: _planilhasDuplicadas,
       );
     } catch (e, st) {
       developer.log(

@@ -18,7 +18,7 @@ Você é um Analista de Qualidade Sênior. Sua tarefa é criar scripts de teste 
 
 **Regras de negócio relevantes:**
 - **Login:** O botão "Entrar com Google" permanece desabilitado até o aceite explícito do termo LGPD (checkbox obrigatório).
-- **Autenticação:** Integração obrigatória com Google Sign-In; na Web, a autorização de acesso ao Drive/Sheets ocorre em ação explícita separada do login.
+- **Autenticação:** Integração obrigatória com Google Sign-In; na Web, a autorização de acesso ao Drive/Sheets ocorre em ação explícita separada do login. Essa segunda etapa **não pode pedir para escolher a conta de novo** — testar com duas contas Google logadas no navegador, que é o cenário em que a escolha dupla aparecia.
 - **Armazenamento:** Dados clínicos persistidos exclusivamente na planilha `__saas_fisio_db__` da conta Google do profissional; escopo OAuth restrito (`drive.file`).
 - **Isolamento:** Cada fisioterapeuta possui sua própria planilha; não há acesso cruzado entre contas.
 - **Agenda do dia:** Exibe somente sessões com `Situacao = "Agendado"` na data atual; sessões antigas sem desfecho aparecem em **Pendências**.
