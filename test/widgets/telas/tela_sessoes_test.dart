@@ -75,6 +75,22 @@ Agendamento _agendamentoPara(
   );
 }
 
+/// Instante de **hoje** que com certeza já passou.
+///
+/// O horário precisa ser derivado do relógio, não fixo: `estaAtrasado` compara
+/// `inicioPrevisto` (data + hora) com `DateTime.now()`, então uma hora fixa
+/// (o padrão '08:00' dos helpers) só ficava vencida quando a suíte rodava
+/// depois dessa hora — o CI em UTC de madrugada via a sessão como ainda não
+/// vencida e o teste falhava. O clamp evita cair no dia anterior à meia-noite.
+DateTime _instanteJaVencido(DateTime agora) {
+  final inicioDoDia = DateTime(agora.year, agora.month, agora.day);
+  final umMinutoAtras = agora.subtract(const Duration(minutes: 1));
+  return umMinutoAtras.isBefore(inicioDoDia) ? inicioDoDia : umMinutoAtras;
+}
+
+String _hhmm(DateTime d) =>
+    '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+
 Widget _criarApp(List<Agendamento> agendamentos) {
   return _criarAppCom([_paciente()], agendamentos);
 }
@@ -127,13 +143,26 @@ void main() {
     });
 
     testWidgets('deve listar sessões vencidas pelo filtro Vencidas', (tester) async {
-      // Past date that is always in the current month (midnight of today = before now)
-      final hoje = DateTime.now();
-      final passadoMesAtual = DateTime(hoje.year, hoje.month, hoje.day);
+      // Data sempre no mês corrente (hoje) com horário já passado — ver
+      // `_instanteJaVencido`.
+      final vencida = _instanteJaVencido(DateTime.now());
+      final hojeZerado = DateTime(vencida.year, vencida.month, vencida.day);
       await tester.pumpWidget(
         _criarApp([
-          _agendamento('A001', Agendamento.situacaoAgendado, passadoMesAtual),
-          _agendamento('A002', Agendamento.situacaoRealizado, passadoMesAtual),
+          _agendamentoPara(
+            'A001',
+            'P001',
+            Agendamento.situacaoAgendado,
+            hojeZerado,
+            horaInicio: _hhmm(vencida),
+          ),
+          _agendamentoPara(
+            'A002',
+            'P001',
+            Agendamento.situacaoRealizado,
+            hojeZerado,
+            horaInicio: _hhmm(vencida),
+          ),
         ]),
       );
       await tester.pumpAndSettle();
@@ -210,20 +239,10 @@ void main() {
   group('TelaSessoes — filtros por período e status', () {
     Future<void> montar(WidgetTester tester) async {
       final hoje = DateTime.now();
-      // Sessão de hoje que JÁ venceu. O horário precisa ser derivado de `hoje`,
-      // não fixo: o filtro "Hoje" compara `inicioPrevisto` com o relógio, então
-      // uma hora fixa (o padrão '08:00' de `_agendamentoPara`) fazia o teste
-      // passar só quando a suíte rodava depois dessa hora — o CI em UTC de
-      // madrugada via a sessão como ainda não vencida e o teste falhava.
-      // O clamp evita cair no dia anterior quando são 00:00.
-      final inicioDoDia = DateTime(hoje.year, hoje.month, hoje.day);
-      final umMinutoAtras = hoje.subtract(const Duration(minutes: 1));
-      final vencida =
-          umMinutoAtras.isBefore(inicioDoDia) ? inicioDoDia : umMinutoAtras;
+      // Sessão de hoje que JÁ venceu — ver `_instanteJaVencido`.
+      final vencida = _instanteJaVencido(hoje);
       final ontem = DateTime(vencida.year, vencida.month, vencida.day);
-      final horaVencida =
-          '${vencida.hour.toString().padLeft(2, '0')}:'
-          '${vencida.minute.toString().padLeft(2, '0')}';
+      final horaVencida = _hhmm(vencida);
       // Future date always in current month: tonight at 23:59
       final amanha = DateTime(hoje.year, hoje.month, hoje.day, 23, 59);
 
