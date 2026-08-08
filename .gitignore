@@ -87,3 +87,6 @@ fisio-web.html
 # Local editor/session files
 .cursor/*
 !.cursor/mcp.json
+
+# Artefatos de sessão de ferramentas (Playwright MCP)
+.playwright-mcp/

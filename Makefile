@@ -33,7 +33,7 @@ icones: ## Regera o ícone do app em todas as plataformas (Android, web, iOS, ma
 	@echo "Ícones regerados. Confira o diff antes de commitar."
 
 # ---------------------------------------------------------------------------
-# CI/CD — fluxo via GitHub Actions (auxiliares -> develop -> master)
+# CI/CD — fluxo via GitHub Actions (auxiliares -> develop -> main)
 # ---------------------------------------------------------------------------
 
 ci-local: ## Roda localmente o mesmo que a CI faz (lint + testes + build web)
@@ -50,17 +50,17 @@ release-dev: ## Mescla a branch atual na develop e publica o ambiente de testes 
 	git merge --no-edit $$BR && \
 	git push origin develop && \
 	git checkout $$BR && \
-	echo "Pronto. Acompanhe o deploy em: https://github.com/lacerdaRodrigo/app-fisio2/actions"
+	echo "Pronto. Acompanhe o deploy em: https://github.com/lacerdaRodrigo/alta/actions"
 
-release-prod: ## Mescla develop -> master e PUBLICA EM PRODUÇÃO (dispara deploy de produção)
+release-prod: ## Mescla develop -> main e PUBLICA EM PRODUÇÃO (dispara deploy de produção)
 	@echo "ATENÇÃO: isso publica no site OFICIAL (app-fisio-care-2.web.app)."
 	@printf "Confirma? [s/N] "; read ans; [ "$$ans" = "s" ] || [ "$$ans" = "S" ] || (echo "Cancelado." && exit 1)
 	@BR=$$(git rev-parse --abbrev-ref HEAD); \
-	git checkout master && \
+	git checkout main && \
 	git merge --no-edit develop && \
-	git push origin master && \
+	git push origin main && \
 	git checkout $$BR && \
-	echo "Deploy de produção disparado. Acompanhe em: https://github.com/lacerdaRodrigo/app-fisio2/actions"
+	echo "Deploy de produção disparado. Acompanhe em: https://github.com/lacerdaRodrigo/alta/actions"
 
 maestro-test: maestro-check ## Roda smoke E2E Maestro (.maestro/flows/smoke_app_abre.yaml)
 	maestro test .maestro/flows/smoke_app_abre.yaml

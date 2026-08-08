@@ -1,0 +1,52 @@
+Licença de Uso Restrito — Alta
+Copyright (c) 2026 Rodrigo Lacerda. Todos os direitos reservados.
+
+O código-fonte deste repositório é disponibilizado publicamente para fins de
+transparência, avaliação técnica e portfólio profissional. Ele NÃO é software
+livre nem de código aberto.
+
+PERMITIDO
+---------
+1. Ler, estudar e analisar o código-fonte.
+2. Clonar o repositório para leitura e avaliação técnica (por exemplo, em
+   processos seletivos ou revisões de arquitetura).
+3. Citar trechos do código em contexto educacional, com atribuição a
+   Rodrigo Lacerda e link para este repositório.
+
+NÃO PERMITIDO — sem autorização prévia e por escrito do titular
+---------------------------------------------------------------
+1. Uso comercial do software, no todo ou em parte.
+2. Redistribuição, publicação ou revenda do código, compilado ou não.
+3. Criação de obras derivadas, forks funcionais ou produtos concorrentes
+   baseados neste código.
+4. Operar o Alta, ou serviço equivalente derivado dele, para terceiros.
+5. Uso das marcas, do nome "Alta", da identidade visual ou dos ícones do
+   projeto.
+
+MARCAS
+------
+"Alta" e a identidade visual associada são marcas do titular e não são
+licenciadas por este documento.
+
+DEPENDÊNCIAS DE TERCEIROS
+-------------------------
+Esta licença cobre exclusivamente o código autoral deste repositório. As
+bibliotecas de terceiros declaradas em `pubspec.yaml` (Flutter, Riverpod,
+googleapis, entre outras) permanecem sob suas respectivas licenças originais.
+
+DADOS CLÍNICOS
+--------------
+O Alta adota o modelo BYODB: os dados de pacientes ficam na conta Google do
+próprio profissional de saúde. Este repositório não contém, e nunca deve
+conter, dados pessoais ou clínicos reais. Ver `documentacao/SEGURANCA_E_DADOS.md`.
+
+ISENÇÃO DE GARANTIA
+-------------------
+O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIA DE QUALQUER NATUREZA, EXPRESSA
+OU IMPLÍCITA, INCLUINDO MAS NÃO SE LIMITANDO ÀS GARANTIAS DE COMERCIABILIDADE,
+ADEQUAÇÃO A UM DETERMINADO FIM E NÃO VIOLAÇÃO. EM NENHUMA HIPÓTESE O TITULAR
+SERÁ RESPONSÁVEL POR QUALQUER REIVINDICAÇÃO, DANO OU OUTRA RESPONSABILIDADE
+DECORRENTE DO SOFTWARE OU DE SEU USO.
+
+Para solicitar autorização de uso além do permitido acima:
+lacerdaa.rodrigo@gmail.com

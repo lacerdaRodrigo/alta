@@ -20,12 +20,12 @@ vá ao ar e mantém a versão sempre organizada.
         develop ───────────►  Ambiente de TESTES (URL temporária de preview)
             │  (merge quando aprovado nos testes)
             ▼
-         master ───────────►  PRODUÇÃO (site oficial app-fisio-care-2.web.app)
+           main ───────────►  PRODUÇÃO (site oficial app-fisio-care-2.web.app)
 ```
 
 - **`develop`**: ambiente de testes. Todo push aqui roda lint + testes e publica
   num **preview channel** do Firebase (endereço temporário, isolado da produção).
-- **`master`**: produção. Todo push aqui roda lint + testes, **incrementa a versão**,
+- **`main`**: produção. Todo push aqui roda lint + testes, **incrementa a versão**,
   publica o site oficial e registra o número da nova versão automaticamente.
 
 > Em ambos os casos, se o lint ou os testes falharem, **a publicação é cancelada** —
@@ -39,7 +39,7 @@ vá ao ar e mantém a versão sempre organizada.
 | Arquivo | Dispara quando | O que faz |
 |---|---|---|
 | `deploy-preview.yml` | push em `develop` | `flutter analyze` + `flutter test`, builda e publica no **preview channel** (ambiente de testes). |
-| `deploy-prod.yml` | push em `master` | `flutter analyze` + `flutter test`, **incrementa a versão**, builda, publica em **produção** e commita o bump (`[skip ci]`). |
+| `deploy-prod.yml` | push em `main` | `flutter analyze` + `flutter test`, **incrementa a versão**, builda, publica em **produção** e commita o bump (`[skip ci]`). |
 
 > Para rodar a mesma verificação localmente antes de subir, use `make ci-local`.
 
@@ -88,7 +88,7 @@ Em **Settings → Secrets and variables → Actions** (aba **Secrets**, não "Va
 ```bash
 make ci-local      # roda lint + testes + build web ANTES de subir (igual à CI)
 make release-dev   # mescla a branch atual na develop e publica o ambiente de testes
-make release-prod  # mescla develop -> master e PUBLICA EM PRODUÇÃO (pede confirmação)
+make release-prod  # mescla develop -> main e PUBLICA EM PRODUÇÃO (pede confirmação)
 ```
 
 ### Passo a passo típico
@@ -107,14 +107,14 @@ make release-prod  # mescla develop -> master e PUBLICA EM PRODUÇÃO (pede conf
 
 2. **Publicar em produção** (quando aprovado nos testes):
    ```bash
-   make release-prod        # mescla develop -> master e pede confirmação (s/N)
+   make release-prod        # mescla develop -> main e pede confirmação (s/N)
    ```
    → publica em `https://app-fisio-care-2.web.app`, sobe a versão (ex.: 1.0.7 → 1.0.8)
    e registra o commit do bump.
 
 ### Acompanhar as execuções
 
-👉 `https://github.com/lacerdaRodrigo/app-fisio2/actions`
+👉 `https://github.com/lacerdaRodrigo/alta/actions`
 - ✓ verde = sucesso · ✗ vermelho = falha (clique na execução → no job → na etapa
   vermelha para ver o erro).
 
@@ -140,4 +140,4 @@ incrementam o número de versão e podem se desencontrar.
 
 ---
 
-**Última atualização:** 2026-06-17
+**Última atualização:** 2026-08-07

@@ -1,10 +1,10 @@
-name: Deploy de Produção (master)
+name: Deploy de Produção (main)
 
-# A cada push na branch 'master': incrementa a versão, compila,
+# A cada push na branch 'main': incrementa a versão, compila,
 # publica o site oficial no Firebase e registra a nova versão (commit).
 on:
   push:
-    branches: [master]
+    branches: [main]
 
 permissions:
   contents: write
@@ -116,7 +116,7 @@ jobs:
           git add pubspec.yaml web/version.json
           git diff --staged --quiet && echo "Nada para commitar." && exit 0
           git commit -m "chore: bump versão para ${{ steps.versao.outputs.app_version }} [skip ci]"
-          git pull --rebase origin master
+          git pull --rebase origin main
           git push
           echo "Versão v${{ steps.versao.outputs.app_version }} registrada no repositório."
 
