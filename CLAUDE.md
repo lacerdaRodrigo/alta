@@ -508,12 +508,12 @@ make prod-android
 
 ## CI/CD (GitHub Actions)
 
-Pipeline em `.github/workflows/` com fluxo de duas branches (`develop` → `master`):
+Pipeline em `.github/workflows/` com fluxo de duas branches (`develop` → `main`):
 
 | Workflow | Dispara em | O que faz |
 |---|---|---|
 | `deploy-preview.yml` | push em `develop` | Lint + testes + build web → deploy em **preview channel** do Firebase (URL temporária, ambiente de testes). |
-| `deploy-prod.yml` | push em `master` | Lint + testes → define a versão (patch +1, ou respeita bump manual do `pubspec.yaml`) → build → deploy **live** no Firebase → commita o bump com `[skip ci]`. |
+| `deploy-prod.yml` | push em `main` | Lint + testes → define a versão (patch +1, ou respeita bump manual do `pubspec.yaml`) → build → deploy **live** no Firebase → commita o bump com `[skip ci]`. |
 
 > Não há workflow de CI separado: a verificação (lint + testes) está embutida nos dois deploys, então código quebrado nunca é publicado. Rode `make ci-local` para verificar localmente antes de subir.
 
@@ -540,7 +540,7 @@ Pipeline em `.github/workflows/` com fluxo de duas branches (`develop` → `mast
 ```bash
 make ci-local      # roda localmente o mesmo que a CI (lint + testes + build web)
 make release-dev   # mescla a branch atual na develop → dispara deploy de testes (preview)
-make release-prod  # mescla develop → master → dispara deploy de produção (pede confirmação)
+make release-prod  # mescla develop → main → dispara deploy de produção (pede confirmação)
 ```
 
 📚 Guia completo (uso, secrets, troubleshooting): `documentacao/CI_CD.md`.
@@ -551,7 +551,9 @@ make release-prod  # mescla develop → master → dispara deploy de produção 
 
 | Arquivo | Conteúdo | Atualizado? |
 |---|---|---|
-| `README.md` | Getting started, como rodar, publicar | ✅ |
+| `README.md` | Vitrine do projeto: problema, arquitetura, stack, como rodar, testes, CI/CD | ✅ |
+| `LICENSE` | Licença proprietária (código público para leitura/avaliação; uso comercial vedado) | ✅ |
+| `SECURITY.md` | Como reportar vulnerabilidade, escopo, modelo BYODB | ✅ |
 | `CHANGELOG.md` | Histórico de versões | ✅ |
 | `CLAUDE.md` | Este arquivo (contexto para Claude) | ✅ |
 | `documentacao/MODELO_DADOS.md` | Estrutura das 5 abas da planilha | ✅ |
@@ -604,6 +606,7 @@ Para questões sobre estrutura, padrões ou decisões técnicas, **SEMPRE consul
 
 ---
 
-**Última atualização:** 2026-07-29  
-**Versão:** 1.1.1 (`pubspec.yaml` e `web/version.json`) — o deploy de `master` publica como 1.1.2  
-**Branches:** master, develop, identidade-visual
+**Última atualização:** 2026-08-07  
+**Versão:** 1.1.3 (`pubspec.yaml` e `web/version.json`) — o deploy de `main` publica como 1.1.4  
+**Repositório:** `github.com/lacerdaRodrigo/alta` (renomeado de `app-fisio2` em 2026-08-07)  
+**Branches:** main (produção), develop (testes) — as auxiliares mescladas foram removidas
