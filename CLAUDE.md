@@ -607,6 +607,6 @@ Para questões sobre estrutura, padrões ou decisões técnicas, **SEMPRE consul
 ---
 
 **Última atualização:** 2026-08-07  
-**Versão:** 1.1.3 (`pubspec.yaml` e `web/version.json`) — o deploy de `main` publica como 1.1.4  
+**Versão:** 1.1.4 (`pubspec.yaml` e `web/version.json`) — o deploy de `main` publica como 1.1.5  
 **Repositório:** `github.com/lacerdaRodrigo/alta` (renomeado de `app-fisio2` em 2026-08-07)  
 **Branches:** main (produção), develop (testes) — as auxiliares mescladas foram removidas
