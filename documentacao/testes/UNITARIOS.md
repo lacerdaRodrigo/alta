@@ -1,12 +1,12 @@
-# 📁 Testes Unitários (173 testes)
+# 📁 Testes Unitários (174 testes)
 
 Lógica pura: validação de entrada, transformação de dados, cálculos.
 
 ---
 
-## test/unitarios/utilitarios/ (93 testes)
+## test/unitarios/utilitarios/ (94 testes)
 
-### mensagens_erro_google_test.dart (7 testes)
+### mensagens_erro_google_test.dart (8 testes)
 
 Tradução de erros do Google Sign-In para mensagens acionáveis na UI.
 
@@ -17,6 +17,7 @@ Tradução de erros do Google Sign-In para mensagens acionáveis na UI.
 ✓ erro 10 aponta para o cliente OAuth, não para o Firebase
 ✓ erro 12500 orienta configurar o provedor Google
 ✓ permissão negada orienta a lista de usuários de teste
+✓ popup bloqueado pelo navegador orienta liberar pop-ups
 ✓ erro desconhecido cai na mensagem genérica
 ```
 

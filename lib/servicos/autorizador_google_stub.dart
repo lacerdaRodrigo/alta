@@ -44,4 +44,17 @@ class AutorizadorGoogleNativo implements AutorizadorGoogle {
     }
     return headers;
   }
+
+  @override
+  Future<ContaAutenticada> entrarInterativo(List<String> escopos) async {
+    final conta = await GoogleSignIn.instance.authenticate(
+      scopeHint: escopos,
+    );
+    await garantirAutorizacao(conta, escopos);
+    return ContaAutenticada(
+      nomeUsuario: conta.displayName ?? conta.email,
+      email: conta.email,
+      obterHeaders: () => headers(conta, escopos),
+    );
+  }
 }

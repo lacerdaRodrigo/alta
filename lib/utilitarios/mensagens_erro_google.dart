@@ -44,5 +44,11 @@ String mensagemErroLoginGoogle(Object erro) {
         'na Tela de consentimento OAuth (Google Cloud Console).';
   }
 
+  if (texto.toLowerCase().contains('popup')) {
+    return 'O navegador bloqueou a janela de login do Google. Permita '
+        'pop-ups para este site nas configurações do navegador e tente '
+        'novamente.';
+  }
+
   return 'Falha ao autenticar. Verifique sua conexão e tente novamente.';
 }

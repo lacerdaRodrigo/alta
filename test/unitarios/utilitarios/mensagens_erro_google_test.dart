@@ -56,6 +56,14 @@ void main() {
       expect(mensagem, contains('usuário de teste'));
     });
 
+    test('popup bloqueado pelo navegador orienta liberar pop-ups', () {
+      final mensagem = mensagemErroLoginGoogle(
+        StateError('Não foi possível obter autorização do Google (popup_closed).'),
+      );
+      expect(mensagem, contains('bloqueou'));
+      expect(mensagem, contains('pop-ups'));
+    });
+
     test('erro desconhecido cai na mensagem genérica', () {
       expect(
         mensagemErroLoginGoogle(Exception('socket fechou')),

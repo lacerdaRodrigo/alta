@@ -33,4 +33,28 @@ abstract class AutorizadorGoogle {
     GoogleSignInAccount conta,
     List<String> escopos,
   );
+
+  /// Login interativo completo — identidade + autorização dos escopos — num
+  /// único fluxo, disparado pelo toque do usuário no botão do App.
+  ///
+  /// Cada plataforma resolve à sua maneira: no nativo, `GoogleSignIn.authenticate()`
+  /// seguido de `authorizationClient`, sem UI extra. No web, um único popup do
+  /// OAuth2 do GIS cobre escolha de conta **e** consentimento — ver
+  /// `autorizador_google_web.dart` para o porquê de não usar mais o botão de
+  /// identidade renderizado pelo GIS.
+  Future<ContaAutenticada> entrarInterativo(List<String> escopos);
+}
+
+/// Resultado de [AutorizadorGoogle.entrarInterativo]: identidade da conta e
+/// como obter cabeçalhos de autorização para ela.
+class ContaAutenticada {
+  final String nomeUsuario;
+  final String email;
+  final Future<Map<String, String>> Function() obterHeaders;
+
+  const ContaAutenticada({
+    required this.nomeUsuario,
+    required this.email,
+    required this.obterHeaders,
+  });
 }
