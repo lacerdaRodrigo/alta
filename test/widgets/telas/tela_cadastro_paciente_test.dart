@@ -410,8 +410,9 @@ group('TelaCadastroPaciente - Campos obrigatorios', () {
 
     expect(find.text('Campos obrigatórios'), findsOneWidget);
     expect(find.text('Nome Completo'), findsOneWidget);
-    // CPF não é mais obrigatório: nunca aparece na lista de pendências.
-    expect(find.text('CPF'), findsNothing);
+    // CPF não é mais obrigatório: nunca aparece como pendência na lista do
+    // dialog. Não dá pra checar com `find.text('CPF')` aqui — esse texto
+    // também é o rótulo do próprio campo, sempre presente na tela.
     expect(find.text('Telefone'), findsOneWidget);
     expect(find.text('Data de Nascimento'), findsWidgets);
     expect(find.text('Endereço'), findsWidgets);
@@ -435,7 +436,6 @@ group('TelaCadastroPaciente - Campos obrigatorios', () {
 
     expect(find.text('Campos obrigatórios'), findsOneWidget);
     expect(find.text('Nome Completo'), findsNothing);
-    expect(find.text('CPF'), findsNothing);
     expect(find.text('Telefone'), findsOneWidget);
     expect(find.text('Data de Nascimento'), findsWidgets);
     expect(find.text('Endereço'), findsWidgets);
@@ -553,7 +553,6 @@ group('TelaCadastroPaciente - Campos obrigatorios', () {
 
     expect(find.text('Campos obrigatórios'), findsOneWidget);
     expect(find.text('Nome Completo'), findsNothing);
-    expect(find.text('CPF'), findsNothing);
     expect(find.text('Telefone'), findsNothing);
     expect(find.text('Data de Nascimento'), findsWidgets);
     expect(find.text('Endereço'), findsWidgets);
@@ -792,6 +791,11 @@ group('TelaCadastroPaciente - Cobertura adicional', () {
         ],
       );
       addTearDown(container.dispose);
+      // `_preencherObrigatorios` toca em `campo_escala_dor` sem rolar até
+      // ele — precisa da superfície alta para o campo já estar renderizado,
+      // senão o finder não encontra nada ("Bad state: No element").
+      await tester.binding.setSurfaceSize(const Size(1000, 4000));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(
         UncontrolledProviderScope(
