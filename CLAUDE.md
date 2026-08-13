@@ -112,7 +112,7 @@ fisio-home-care/
 │       └── mensagens_erro_google.dart    # Mapear erros Google
 │
 ├── test/
-│   ├── unitarios/                   # 173 testes — lógica pura
+│   ├── unitarios/                   # 174 testes — lógica pura
 │   │   ├── auxiliares/
 │   │   │   ├── fakes.dart           # Mocks reutilizados
 │   │   │   └── servidor_google_fake.dart  # Drive/Sheets falso no nível do HTTP
@@ -130,7 +130,7 @@ fisio-home-care/
 │   │       ├── validador_cpf_test.dart      (9 testes)
 │   │       ├── utilitarios_data_test.dart   (23 testes)
 │   │       ├── gerador_id_test.dart         (8 testes — 100% cobertura)
-│   │       └── mensagens_erro_google_test.dart (7 testes — diagnóstico de login)
+│   │       └── mensagens_erro_google_test.dart (8 testes — diagnóstico de login)
 │   │
 │   └── widgets/                     # 191 testes — UI + componentes
 │       ├── componentes/
@@ -166,8 +166,8 @@ fisio-home-care/
 │   ├── chaves.md                    # (no .gitignore) — credenciais
 │   └── testes/
 │       ├── README.md                # Índice de testes
-│       ├── VISAO_GERAL.md           # Overview 364 testes
-│       ├── UNITARIOS.md             # Detalhe dos 173 unitários
+│       ├── VISAO_GERAL.md           # Overview 365 testes
+│       ├── UNITARIOS.md             # Detalhe dos 174 unitários
 │       └── WIDGETS.md               # Detalhe dos 191 widgets
 │
 ├── QA/
@@ -309,17 +309,17 @@ Paciente.calcularIdade()   // ✓ delega para UtilitariosData
 
 ---
 
-## Testes (364 testes automatizados)
+## Testes (365 testes automatizados)
 
 ### Estrutura
 
 ```
 test/
-├── unitarios/  (173 testes)
+├── unitarios/  (174 testes)
 │   ├── auxiliares/     — fakes.dart (mocks reutilizados)
 │   ├── modelos/        — 25 testes (serialização, transformação)
 │   ├── servicos/       — 50 testes (preferencias, Drive, Sheets, repositório)
-│   └── utilitarios/    — 93 testes (validadores, data, CPF, gerador_id, erros do Google)
+│   └── utilitarios/    — 94 testes (validadores, data, CPF, gerador_id, erros do Google)
 │
 └── widgets/    (191 testes)
     ├── telas/        — 13 telas principais (UI, interação)
@@ -420,41 +420,54 @@ flutter run
 | Todas as telas principais possuem testes de widget | — | ✅ |
 | Busca da planilha por `name contains` adotava cópias do Drive como base | Resolvido (nome exato + aviso de duplicata em Configurações) | ✅ |
 | `lerVersaoEsquema` lia a linha inteira e tratava toda planilha como versão 1 | Resolvido (lê a primeira célula) | ✅ |
-| Botão de login do web é o do Google (platform view) sobreposto ao desenho | Trade-off aceito para preservar o visual — ver regras abaixo | 🟡 |
+| Login no web precisava de 2 popups (identidade + autorização); o 2º não nascia de um clique e o WebKit do iOS (todo navegador no iOS) bloqueava sempre — cliente relatou não conseguir entrar | Resolvido em 2026-08-13 (login interativo virou 1 popup só — ver regras abaixo) | ✅ |
 
 ### ⚠️ Login no web — regras que não podem ser quebradas
 
-No web o Google Identity Services **não permite login iniciado pela aplicação**
-(`GoogleSignIn.authenticate()` lança `UnsupportedError`). A `TelaLogin` sobrepõe
-o botão do SDK, quase transparente, ao botão desenhado. Nada disso aparece nos
-testes: fora do web `construirBotaoGoogleRenderizado` vira `SizedBox.shrink()`.
+Até 2026-08-13 o login no web usava dois popups: identidade pelo botão do GIS
+(sobreposto, quase transparente, ao botão desenhado) e depois autorização dos
+escopos por um token client separado, disparado automaticamente pelo stream
+`authenticationEvents`. Esse segundo popup não nascia de um clique **nesta
+página** — o clique original tinha sido consumido pela interação inteira com o
+primeiro popup, que leva segundos. O Chrome tolerava isso na maior parte das
+vezes (daí o app "funcionar" depois de tentar duas vezes); o WebKit do
+iOS — usado por **todo** navegador no iOS, Chrome incluso, por exigência da
+Apple — bloqueava sempre. Foi assim que um cliente ficou completamente incapaz
+de entrar pelo iPhone.
 
-- **`Opacity` tem que ser > 0.** Com alpha 0 o Flutter não pinta o filho
-  (`RenderOpacity.paint`), e uma platform view só entra no DOM quando pintada —
-  o botão deixa de existir e o clique cai no vazio.
-- **`IgnorePointer` não segura clique de platform view.** Ele só afeta o
-  hit-test do Flutter; o elemento DOM recebe o evento direto. Para bloquear de
-  verdade (ex.: enquanto os termos não são aceitos), **não construir o widget**.
-- **O GIS limita o botão a 400px** e centraliza. O desenho por baixo tem que
-  respeitar a mesma largura, senão as extremidades não respondem ao clique.
-- **A autorização no web não usa o `authorizationClient` do plugin.**
-  `google_sign_in_web` amarra hint e prompt (`src/gis_client.dart`):
-  `prompt: userHint == null ? '' : 'select_account'`. Com hint ele força o
-  seletor; sem hint manda `login_hint: null` e o Google pergunta a conta de
-  novo. Como o login web tem duas etapas (botão do GIS + token client), o
-  usuário escolhia a conta **duas vezes**. `lib/servicos/autorizador_google_web.dart`
-  monta o token client direto (`google_identity_services_web`) com
-  `login_hint: email` **e** `prompt: ''` — o par que o plugin não permite.
-  Fora do web, `autorizador_google_stub.dart` mantém `conta.authorizationClient`.
-- **Cache de token é por e-mail e a requisição é deduplicada.** No web o token
-  vale 1h e não se renova sozinho; sem o cache por conta, trocar de usuário
-  reaproveitaria o token do anterior, e sem a deduplicação duas chamadas
-  simultâneas às APIs abririam dois popups.
+A correção: `entrar()` agora pede conta **e** consentimento dos escopos num
+popup só (`AutorizadorGoogleWeb.entrarInterativo`,
+`lib/servicos/autorizador_google_web.dart`), chamado sem nenhum `await` na
+frente — ainda dentro da mesma pilha síncrona do toque no botão do App
+(`tela_login.dart` → `provedor_autenticacao.dart` → `servico_autenticacao_google.dart`
+→ `autorizador_google_web.dart`, sem operação assíncrona real entre o clique e
+`requestAccessToken()`). Identidade (nome/e-mail) vem do próprio access token,
+via `https://www.googleapis.com/oauth2/v3/userinfo` — o escopo `email` já
+estava entre os pedidos. Não existe mais botão do GIS sobreposto ao desenho;
+`_BotaoEntrarGoogle` é um `GestureDetector` comum.
 
-Como diagnosticar: rodar o app e inspecionar o DOM — `flt-platform-view` para
-saber se o botão existe, e `elementFromPoint(...).closest('[role="button"]')` nas
-bordas e no centro para saber se ele recebe o clique. Screenshot não revela nada
-disso.
+- **Nada de `await` real antes de `cliente.requestAccessToken()`.** Qualquer
+  operação de rede genuína nesse caminho (não uma `Future` já resolvida) corre
+  o risco de o Safari/WebKit deixar de reconhecer o popup como originado do
+  clique. É por isso que `entrarComGoogle()` (`provedor_autenticacao.dart`)
+  pula `tentarRestaurarSessao()` no web (ela quase nunca ajuda ali — o cache do
+  token é em memória e não sobrevive a um reload) e roda `limparPlanilhaId()`
+  em paralelo com `servico.entrar()` em vez de antes.
+- **`prompt: 'select_account'` no popup único.** Como não há mais um primeiro
+  popup escolhendo a conta, este precisa perguntar sempre — é o único momento
+  em que o usuário escolhe entre contas.
+- **`garantirAutorizacao`/`headers`/`headersSeAutorizado` continuam existindo**
+  só para **renovar** o token depois do login (expira em 1h no web). Aí sim
+  usam `login_hint: email` com `prompt: ''` — a conta já é conhecida e não há
+  necessidade de abrir UI. Não confundir com o login interativo.
+- **Cache de token é por e-mail e a requisição é deduplicada.** Sem o cache por
+  conta, trocar de usuário reaproveitaria o token do anterior; sem a
+  deduplicação, duas chamadas simultâneas às APIs abririam dois popups.
+
+Como diagnosticar um problema de login no web: reproduzir num navegador WebKit
+(Safari, ou qualquer navegador no iOS) além do Chrome — é onde o bloqueio de
+popup é mais rígido. Se o popup não abrir, checar se algum `await` real foi
+reintroduzido no caminho entre o toque no botão e `requestAccessToken()`.
 
 ---
 
@@ -561,7 +574,7 @@ make release-prod  # mescla develop → main → dispara deploy de produção (p
 | `documentacao/ESPECIFICACOES_TELAS.md` | Requisitos funcionais das telas | ✅ |
 | `documentacao/SEGURANCA_E_DADOS.md` | LGPD, OAuth, modelo BYODB | ✅ |
 | `documentacao/IMPLEMENTAR.md` | Roadmap priorizado | ✅ |
-| `documentacao/testes/` | 364 testes automatizados | ✅ |
+| `documentacao/testes/` | 365 testes automatizados | ✅ |
 | `documentacao/CI_CD.md` | Pipeline GitHub Actions: fluxo, secrets, uso e troubleshooting | ✅ |
 | `QA/qa.md` | Script QA manual (não é E2E) | ✅ |
 

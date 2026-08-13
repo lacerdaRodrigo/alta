@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer' as developer;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../servicos/preferencias.dart';
@@ -96,10 +97,11 @@ class AutenticacaoNotificador extends Notifier<EstadoAutenticacao> {
   }
 
   void _autenticarComSessao(SessaoGoogle sessao) {
-    // Não limpar `planilha_id` aqui: `entrarComGoogle` já faz isso (com
-    // `await`) antes do login. Uma limpeza solta e não aguardada pode terminar
-    // depois de `obterPlanilhaId()` ter gravado o ID da planilha recém-criada,
-    // apagando a referência e forçando uma nova busca no Drive.
+    // Não limpar `planilha_id` aqui: `entrarComGoogle` já garante (com
+    // `await`) que a limpeza terminou antes de qualquer sessão ser publicada.
+    // Uma limpeza solta e não aguardada pode terminar depois de
+    // `obterPlanilhaId()` ter gravado o ID da planilha recém-criada, apagando
+    // a referência e forçando uma nova busca no Drive.
     state = state.copiarCom(
       estaAutenticado: true,
       estaCarregando: false,
@@ -121,31 +123,43 @@ class AutenticacaoNotificador extends Notifier<EstadoAutenticacao> {
     }
 
     state = state.copiarCom(estaCarregando: true, mensagemErro: null);
-    await Preferencias.limparPlanilhaId();
 
     final servico = ref.read(provedorServicoAutenticacaoGoogle);
 
     try {
-      // Tenta restaurar a sessão anterior antes do fluxo interativo. Na API
-      // 7.x, `tentarRestaurarSessao` já valida a autorização dos escopos e
-      // devolve `null` quando só há identidade sem access token — o app não
-      // precisa mais checar isso por fora.
-      final sessaoAnterior = await servico.tentarRestaurarSessao();
-      if (sessaoAnterior != null) {
-        _autenticarComSessao(sessaoAnterior);
-        return;
+      // Tenta restaurar a sessão anterior antes do fluxo interativo — mas só
+      // no nativo. No web esse cache fica em memória e nunca sobrevive a um
+      // recarregamento de página (é sempre `null` no caso comum), então a
+      // checagem quase nunca evita o popup; ela só atrasaria, com uma
+      // operação de rede de verdade, o toque do usuário até `servico.entrar()`
+      // — e no Safari/WebKit do iOS isso já é o bastante para o navegador
+      // deixar de reconhecer o popup como originado do clique e bloqueá-lo.
+      // Na API 7.x, `tentarRestaurarSessao` já valida a autorização dos
+      // escopos e devolve `null` quando só há identidade sem access token —
+      // o app não precisa mais checar isso por fora.
+      if (!kIsWeb) {
+        final sessaoAnterior = await servico.tentarRestaurarSessao();
+        if (sessaoAnterior != null) {
+          await Preferencias.limparPlanilhaId();
+          _autenticarComSessao(sessaoAnterior);
+          return;
+        }
       }
 
-      // No web o login não pode ser disparado por código: o Google Identity
-      // Services exige que parta do botão que ele mesmo renderiza. A
-      // `TelaLogin` sobrepõe esse botão ao visual do app, e o login chega pelo
-      // stream `sessoesConectadas`. Aqui só encerramos o estado de carregamento
-      // para o botão do Google voltar a ficar utilizável.
       if (!servico.suportaLoginProgramatico) {
         state = state.copiarCom(estaCarregando: false);
         return;
       }
 
+      // `servico.entrar()` abre o popup de login do Google (no web) — precisa
+      // ser chamado o quanto antes, sem `await` na frente, para não arriscar
+      // que o navegador deixe de reconhecer a chamada como originada do toque
+      // do usuário e bloqueie o popup (é rígido demais nisso no Safari/WebKit
+      // do iOS). Por isso a limpeza de `planilha_id` roda em paralelo com o
+      // login em vez de antes dele — mas ainda é aguardada até o fim antes de
+      // qualquer sessão ser publicada, preservando a garantia descrita em
+      // `_autenticarComSessao`.
+      //
       // `servico.entrar()` já publica a sessão em `sessoesConectadas`, que o
       // listener registrado em `build()` consome chamando `_autenticarComSessao`
       // (atualiza `state` uma única vez). Definir `state` de novo aqui causaria
@@ -154,7 +168,9 @@ class AutenticacaoNotificador extends Notifier<EstadoAutenticacao> {
       // desmontada com o carregamento de dados ainda em andamento, e o uso de
       // `ref` depois do `await` nesse carregamento lança
       // "Bad state: ... unmounted".
-      await servico.entrar();
+      final entrando = servico.entrar();
+      await Preferencias.limparPlanilhaId();
+      await entrando;
     } catch (e, stackTrace) {
       developer.log(
         'Erro ao fazer login com Google',

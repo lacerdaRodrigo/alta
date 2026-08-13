@@ -1,6 +1,6 @@
 # 📋 Testes Automatizados — Visão Geral
 
-**Status:** ✅ 364 testes passando
+**Status:** ✅ 365 testes passando
 
 ---
 
@@ -15,7 +15,7 @@ O projeto utiliza **apenas testes unitários e de widget** (sem E2E automatizado
 | **Unit — Serviços** | 50 | 14% | Preferências, Drive, Sheets e repositório de dados (via `ServidorGoogleFake`) |
 | **Widget — Telas** | 164 | 45% | UI, interação, estados visuais |
 | **Widget — Componentes/Utilitários** | 27 | 8% | Modal de detalhes, rodapé versão, ações de agendamento |
-| **TOTAL** | **364** | **100%** | — |
+| **TOTAL** | **365** | **100%** | — |
 
 ---
 
@@ -23,7 +23,7 @@ O projeto utiliza **apenas testes unitários e de widget** (sem E2E automatizado
 
 ```
 test/
-├── unitarios/              (173 testes — lógica pura)
+├── unitarios/              (174 testes — lógica pura)
 │   ├── auxiliares/         
 │   │   ├── fakes.dart                    — Mocks reutilizados
 │   │   └── servidor_google_fake.dart     — Drive/Sheets falso no nível do HTTP
@@ -69,7 +69,7 @@ test/
 ## Como Rodar
 
 ```bash
-# Todos os 364 testes
+# Todos os 365 testes
 flutter test
 
 # Apenas unitários

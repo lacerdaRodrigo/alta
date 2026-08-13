@@ -29,7 +29,7 @@ O App adota o modelo **Bring Your Own Database**: todos os dados são armazenado
 
 | Camada | Mecanismo |
 |---|---|
-| **Login** | Google Sign-In (OAuth 2.0), `google_sign_in` 7.x. O App nunca acessa a senha do usuário. No web o login parte do botão renderizado pelo próprio Google (o SDK não permite fluxo iniciado pela aplicação); no Android, do fluxo nativo. |
+| **Login** | Google Sign-In (OAuth 2.0), `google_sign_in` 7.x. O App nunca acessa a senha do usuário. No web, o toque no botão do App abre diretamente um popup do OAuth2 do Google (identidade + consentimento dos escopos num único passo); no Android, do fluxo nativo. |
 | **Escopos** | `email`, `drive.file` e `spreadsheets`. `drive.file` restringe o acesso aos arquivos que o próprio App criou — não alcança outros arquivos, fotos ou pastas do Drive. `spreadsheets` é exigido pela Sheets API para ler e escrever na planilha do usuário. |
 | **Token** | Access token temporário, resolvido a cada requisição pelo `AutorizadorGoogle` (`lib/servicos/autorizador_google.dart`). Não é armazenado de forma persistente pelo App: no Android vem de `conta.authorizationClient`; no web fica só em memória, indexado pelo e-mail da conta, e expira em 1h. |
 | **Autenticação vs. autorização** | São etapas separadas: identificar o usuário não concede, por si só, acesso ao Drive/Sheets. O App só considera a sessão válida depois de confirmar a autorização dos escopos. |

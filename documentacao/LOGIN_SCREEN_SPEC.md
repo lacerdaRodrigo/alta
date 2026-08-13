@@ -4,19 +4,24 @@ Esta tela é a porta de entrada do aplicativo, responsável pela autenticação 
 
 ## 1. Requisitos Funcionais
 * **Autenticação:** Integração obrigatória com Google Sign-In[cite: 2, 3].
-    * Na Web, o login deve usar o botão oficial do Google renderizado pelo SDK.
-      **Como está implementado:** o botão do SDK é de fato quem dispara o login,
-      mas fica sobreposto (praticamente transparente) ao botão desenhado pelo
-      design system, para preservar a identidade visual da tela. É o SDK que
-      recebe o clique — o desenho por baixo é apenas aparência.
-    * Após selecionar a conta Google, a autorização de acesso ao Drive/Sheets ocorre em uma segunda ação explícita do usuário para evitar bloqueio de popup pelo navegador.
-      Essa etapa **não pode pedir nova escolha de conta**: o App monta o token
-      client do GIS com o e-mail escolhido como `login_hint` e `prompt` vazio
-      (`lib/servicos/autorizador_google_web.dart`), então o Google vai direto à
-      conta e nem exibe a janela quando o consentimento já existe. O
-      `authorizationClient` do `google_sign_in_web` não serve aqui — ele amarra
-      o hint a `prompt: 'select_account'`, e sem hint o Google pergunta a conta
-      de novo quando há mais de uma sessão no navegador.
+    * Na Web, o botão "Continuar com Google" é desenhado pelo próprio app (design
+      system) — não há mais botão do SDK sobreposto. Ao tocar, o App abre um
+      único popup do OAuth2 do Google Identity Services que resolve identidade
+      (escolha de conta) e consentimento dos escopos Drive/Sheets ao mesmo tempo
+      (`AutorizadorGoogleWeb.entrarInterativo`, `lib/servicos/autorizador_google_web.dart`).
+      Nome e e-mail vêm do próprio access token, consultando o endpoint
+      `userinfo` do Google.
+    * **Por que não usar dois popups (identidade separada de autorização):** a
+      versão anterior tinha um segundo popup, disparado automaticamente depois
+      da identidade chegar por um stream — sem clique nenhum nesta página. O
+      Chrome tolerava isso na maioria das vezes; o WebKit do iOS (todo
+      navegador no iOS, por exigência da Apple) bloqueava sempre, impedindo o
+      login por completo nesses dispositivos. Um popup só, chamado sem nenhum
+      `await` real entre o toque do usuário e a abertura do popup, evita o
+      problema — ver `CLAUDE.md` para o histórico e os detalhes técnicos.
+    * A renovação do token (expira em 1h no web) continua usando
+      `login_hint: email` com `prompt` vazio, sem abrir UI, já que a conta é
+      conhecida nesse ponto.
 * **Links legais:** "Política de Privacidade" e "Termos de Uso" no texto do
     consentimento abrem as páginas publicadas (`/privacidade.html` e
     `/termos.html`, URLs em `lib/utilitarios/links_legais.dart`) em aba/navegador
