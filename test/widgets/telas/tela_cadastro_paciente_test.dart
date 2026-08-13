@@ -74,7 +74,9 @@ Future<void> _montarTela(
   await tester.pumpAndSettle();
 }
 
-/// Preenche os campos obrigatórios (nome, CPF, telefone, data, endereço, dor).
+/// Preenche os campos obrigatórios (nome, telefone, data, endereço, dor) e,
+/// por conveniência, também o CPF — que não é obrigatório, mas a maioria dos
+/// testes quer um paciente realista.
 Future<void> _preencherObrigatorios(
   WidgetTester tester, {
   String cpf = '52998224725',
@@ -301,7 +303,7 @@ testWidgets('deve permitir salvar paciente sem preencher campos de anamnese', (
 
   // Preencher apenas dados pessoais obrigatórios
   await tester.enterText(find.widgetWithText(TextFormField, 'Nome Completo *'), 'João Souza');
-  await tester.enterText(find.widgetWithText(TextFormField, 'CPF *'), '52998224725');
+  await tester.enterText(find.widgetWithText(TextFormField, 'CPF'), '52998224725');
   await tester.enterText(find.widgetWithText(TextFormField, 'Telefone *'), '31987654321');
 
   // Preencher data de nascimento
@@ -397,7 +399,7 @@ testWidgets('deve bloquear digitação de valor acima de 10 na escala de dor', (
 });
 
 group('TelaCadastroPaciente - Campos obrigatorios', () {
-  testWidgets('CT-F1: todos os 5 campos vazios mostra dialog com 5 itens', (
+  testWidgets('CT-F1: todos os campos obrigatórios vazios mostra dialog com 4 itens', (
     tester,
   ) async {
     await tester.pumpWidget(criarAppTeste());
@@ -408,7 +410,8 @@ group('TelaCadastroPaciente - Campos obrigatorios', () {
 
     expect(find.text('Campos obrigatórios'), findsOneWidget);
     expect(find.text('Nome Completo'), findsOneWidget);
-    expect(find.text('CPF'), findsOneWidget);
+    // CPF não é mais obrigatório: nunca aparece na lista de pendências.
+    expect(find.text('CPF'), findsNothing);
     expect(find.text('Telefone'), findsOneWidget);
     expect(find.text('Data de Nascimento'), findsWidgets);
     expect(find.text('Endereço'), findsWidgets);
@@ -419,7 +422,7 @@ group('TelaCadastroPaciente - Campos obrigatorios', () {
     expect(find.text('Campos obrigatórios'), findsNothing);
   });
 
-  testWidgets('CT-F2: apenas Nome preenchido mostra dialog com 4 itens', (
+  testWidgets('CT-F2: apenas Nome preenchido mostra dialog com 3 itens', (
     tester,
   ) async {
     await tester.pumpWidget(criarAppTeste());
@@ -432,29 +435,7 @@ group('TelaCadastroPaciente - Campos obrigatorios', () {
 
     expect(find.text('Campos obrigatórios'), findsOneWidget);
     expect(find.text('Nome Completo'), findsNothing);
-    expect(find.text('CPF'), findsOneWidget);
-    expect(find.text('Telefone'), findsOneWidget);
-    expect(find.text('Data de Nascimento'), findsWidgets);
-    expect(find.text('Endereço'), findsWidgets);
-
-    await tester.tap(find.text('OK'));
-    await tester.pumpAndSettle();
-  });
-
-  testWidgets('CT-F3: apenas CPF preenchido mostra dialog com 4 itens', (
-    tester,
-  ) async {
-    await tester.pumpWidget(criarAppTeste());
-    await tester.pumpAndSettle();
-
-    await tester.enterText(find.widgetWithText(TextFormField, 'CPF *'), '529.982.247-25');
-
-    await tester.tap(find.text('Salvar Paciente'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Campos obrigatórios'), findsOneWidget);
     expect(find.text('CPF'), findsNothing);
-    expect(find.text('Nome Completo'), findsOneWidget);
     expect(find.text('Telefone'), findsOneWidget);
     expect(find.text('Data de Nascimento'), findsWidgets);
     expect(find.text('Endereço'), findsWidgets);
@@ -463,14 +444,108 @@ group('TelaCadastroPaciente - Campos obrigatorios', () {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('CT-F4: Nome+CPF+Telefone preenchidos mostra dialog com 2 itens', (
+  testWidgets(
+    'CT-F3: CPF em branco não aparece nos campos obrigatórios e o cadastro segue normalmente',
+    (tester) async {
+      final container = ProviderContainer(
+        overrides: [
+          provedorListaPacientes.overrideWith(() => ListaPacientesNotifier()),
+          provedorRepositorioDados.overrideWith(
+            (ref) => FakeRepositorioDadosGoogle(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            localizationsDelegates: [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+            ],
+            home: TelaCadastroPaciente(),
+            supportedLocales: [Locale('en', 'US')],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Preenche tudo, menos o CPF (fica em branco de propósito).
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Nome Completo *'),
+        'Sem CPF',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Telefone *'),
+        '31987654321',
+      );
+
+      await tester.tap(find.text('Selecionar data'));
+      await tester.pumpAndSettle();
+      final okButton = find.widgetWithText(TextButton, 'OK');
+      if (okButton.evaluate().isNotEmpty) {
+        await tester.tap(okButton);
+      }
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Toque para preencher endereço'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Rua/Avenida *'),
+        'Rua A',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Bairro *'),
+        'Bairro B',
+      );
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Cidade *'),
+        'Cidade C',
+      );
+      await tester.tap(find.text('Confirmar'));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.widgetWithText(TextFormField, 'Escala de dor (0-10)'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Escala de dor (0-10)'),
+        '5',
+      );
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.text('Salvar Paciente'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Salvar Paciente'));
+      await tester.pumpAndSettle();
+
+      // Sem CPF, o dialog de campos obrigatórios não aparece.
+      expect(find.text('Campos obrigatórios'), findsNothing);
+      expect(find.text('Atenção: campos definitivos'), findsOneWidget);
+      await _confirmarCamposDefinitivos(tester);
+
+      final pacientes = container.read(provedorListaPacientes);
+      expect(pacientes, isNotEmpty);
+      expect(pacientes.first.cpf, isEmpty);
+    },
+  );
+
+  testWidgets('CT-F4: Nome+Telefone preenchidos mostra dialog com 2 itens', (
     tester,
   ) async {
     await tester.pumpWidget(criarAppTeste());
     await tester.pumpAndSettle();
 
     await tester.enterText(find.widgetWithText(TextFormField, 'Nome Completo *'), 'Maria');
-    await tester.enterText(find.widgetWithText(TextFormField, 'CPF *'), '529.982.247-25');
     await tester.enterText(find.widgetWithText(TextFormField, 'Telefone *'), '(11) 91234-5678');
 
     await tester.tap(find.text('Salvar Paciente'));
@@ -513,7 +588,7 @@ group('TelaCadastroPaciente - Campos obrigatorios', () {
 
     // Preencher todos os campos obrigatórios
     await tester.enterText(find.widgetWithText(TextFormField, 'Nome Completo *'), 'João Teste');
-    await tester.enterText(find.widgetWithText(TextFormField, 'CPF *'), '52998224725');
+    await tester.enterText(find.widgetWithText(TextFormField, 'CPF'), '52998224725');
     await tester.enterText(find.widgetWithText(TextFormField, 'Telefone *'), '31987654321');
 
     // Data de nascimento
@@ -682,6 +757,97 @@ group('TelaCadastroPaciente - Cobertura adicional', () {
 
     expect(find.text('Este CPF já está cadastrado.'), findsOneWidget);
   });
+
+  testWidgets(
+    'CPF sem dígito verificador válido (ex.: 11111111111) é aceito, mas duplicado é bloqueado',
+    (tester) async {
+      // Não valida mais o algoritmo do CPF, mas duplicidade continua sendo
+      // comparação de texto — então mesmo uma sequência "inválida" repetida
+      // precisa ser barrada igual a qualquer outro CPF.
+      await _montarTela(
+        tester,
+        pacientes: [_pacienteExistente(cpf: '11111111111')],
+        repositorio: FakeRepositorioDadosGoogle(),
+      );
+
+      await _preencherObrigatorios(tester, cpf: '11111111111');
+
+      await tester.tap(find.byKey(const Key('btn_salvar_paciente')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Campos obrigatórios'), findsNothing);
+      expect(find.text('Este CPF já está cadastrado.'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'CPF com sequência qualquer (sem checksum válido) é salvo como digitado',
+    (tester) async {
+      final container = ProviderContainer(
+        overrides: [
+          provedorListaPacientes.overrideWith(() => ListaPacientesNotifier()),
+          provedorRepositorioDados.overrideWith(
+            (ref) => FakeRepositorioDadosGoogle(),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            localizationsDelegates: [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: [Locale('pt', 'BR'), Locale('en', 'US')],
+            home: TelaCadastroPaciente(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // "123" não passa em nenhum algoritmo de CPF real — nem em dígitos
+      // suficientes. Precisa ser aceito do mesmo jeito.
+      await _preencherObrigatorios(tester, cpf: '123');
+
+      await tester.tap(find.byKey(const Key('btn_salvar_paciente')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Campos obrigatórios'), findsNothing);
+      await _confirmarCamposDefinitivos(tester);
+
+      final pacientes = container.read(provedorListaPacientes);
+      expect(pacientes, isNotEmpty);
+      // Compara só os dígitos: a máscara pode ou não anexar pontuação a um
+      // trecho parcial, o que não é o que este teste quer verificar.
+      expect(
+        pacientes.first.cpf.replaceAll(RegExp(r'[^\d]'), ''),
+        '123',
+      );
+    },
+  );
+
+  testWidgets(
+    'CPF em branco não gera falso positivo de duplicidade entre dois pacientes',
+    (tester) async {
+      await _montarTela(
+        tester,
+        pacientes: [_pacienteExistente(cpf: '')],
+        repositorio: FakeRepositorioDadosGoogle(),
+      );
+
+      await _preencherObrigatorios(tester, cpf: '');
+
+      await tester.tap(find.byKey(const Key('btn_salvar_paciente')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Este CPF já está cadastrado.'), findsNothing);
+      expect(find.text('Atenção: campos definitivos'), findsOneWidget);
+    },
+  );
 
   testWidgets(
     'salvar com todos os campos gera próximo ID e persiste a anamnese',

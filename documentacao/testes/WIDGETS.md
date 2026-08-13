@@ -1,4 +1,4 @@
-# 🎨 Testes de Widget (191 testes)
+# 🎨 Testes de Widget (194 testes)
 
 Testes de componentes visuais: telas, componentes reutilizáveis e utilitários
 de UI, interação do usuário e estados visuais.
@@ -168,7 +168,7 @@ valor e observações.
 
 ---
 
-### tela_cadastro_paciente_test.dart (23 testes)
+### tela_cadastro_paciente_test.dart (26 testes)
 
 **Tela:** Cadastro de novo paciente — formulário com validação de campos obrigatórios.
 
@@ -194,31 +194,44 @@ valor e observações.
 ```
 
 #### Validação de Campos Obrigatórios — CT-F (6 testes)
+
+CPF deixou de ser obrigatório e de ser validado por dígito verificador — pedido
+explícito do cliente, já que nem todo paciente chega ao primeiro atendimento
+com o CPF em mãos. Aceita qualquer sequência de até 11 dígitos, inclusive vazia.
+
 ```dart
-✓ CT-F1: 5 campos vazios → dialog com 5 itens
-  (Nome, CPF, Telefone, Data de Nascimento, Endereço)
-✓ CT-F2: Só Nome preenchido → dialog com 4 itens
-✓ CT-F3: Só CPF preenchido → dialog com 4 itens
-✓ CT-F4: Nome+CPF+Telefone → dialog com 2 itens
+✓ CT-F1: todos os campos obrigatórios vazios → dialog com 4 itens
+  (Nome, Telefone, Data de Nascimento, Endereço — CPF nunca aparece)
+✓ CT-F2: Só Nome preenchido → dialog com 3 itens
+✓ CT-F3: CPF em branco não aparece nos campos obrigatórios e o
+  cadastro segue normalmente
+✓ CT-F4: Nome+Telefone → dialog com 2 itens
   (Faltam Data e Endereço)
 ✓ CT-F5: Todos preenchidos → salva sem dialog
 ✓ CT-F6: Dialog fecha ao clicar OK
 ```
 
-#### Cobertura adicional (8 testes)
+#### Cobertura adicional (11 testes)
 ```dart
 ✓ Botão fechar (X) aciona o retorno
 ✓ Selecionar gênero no dropdown atualiza a seleção
 ✓ Validação do formulário aceita o gênero selecionado
 ✓ Telefone com menos de 10 dígitos é sinalizado
 ✓ CPF já cadastrado exibe snackbar de erro
+✓ CPF sem dígito verificador válido (ex.: 11111111111) é aceito,
+  mas duplicado é bloqueado — duplicidade continua sendo comparação
+  de texto, não depende do CPF ser "válido"
+✓ CPF com sequência qualquer (sem checksum válido) é salvo como digitado
+✓ CPF em branco não gera falso positivo de duplicidade entre dois pacientes
 ✓ Salvar com todos os campos gera próximo ID (P005 → P006) e persiste a anamnese
 ✓ Falha ao salvar exibe snackbar de erro
 ✓ Popup de campos definitivos: "Revisar" cancela sem salvar
 ```
 
 > Obs.: os testes que persistem o paciente confirmam o popup de campos
-> definitivos (Nome/CPF/Data/Gênero) via `btn_confirmar_cadastro` antes de gravar.
+> definitivos (Nome/CPF/Data/Gênero) via `btn_confirmar_cadastro` antes de
+> gravar — CPF continua **imutável após o cadastro** (se preenchido), mesmo
+> não sendo mais obrigatório nem validado na criação.
 
 ### tela_editar_paciente_test.dart (6 testes)
 
