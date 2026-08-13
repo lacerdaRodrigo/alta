@@ -4,7 +4,7 @@
 > registrado no [`CHANGELOG.md`](../CHANGELOG.md); o estado atual da arquitetura
 > está no [`CLAUDE.md`](../CLAUDE.md).
 
-**Status:** MVP funcional completo em produção (web) · 365 testes automatizados
+**Status:** MVP funcional completo em produção (web) · 368 testes automatizados
 **Atualizado em:** 2026-07-29
 
 ---

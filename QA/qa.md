@@ -24,7 +24,7 @@ Você é um Analista de Qualidade Sênior. Sua tarefa é criar scripts de teste 
 - **Agenda do dia:** Exibe somente sessões com `Situacao = "Agendado"` na data atual; sessões antigas sem desfecho aparecem em **Pendências**.
 - **Desfechos de sessão:** `Realizado`, `Cancelado`, `Cancelado pelo paciente`, `Cancelado pelo profissional`, `Faltou com aviso`, `Faltou sem aviso`.
 - **Nova sessão:** Não permite agendar horários retroativos (anteriores ao momento atual).
-- **Pacientes:** Cadastro com validação de campos obrigatórios (nome, CPF, telefone, endereço, dados clínicos iniciais); filtros `Todos` e `Ativos`.
+- **Pacientes:** Cadastro com validação de campos obrigatórios (nome, telefone, endereço, dados clínicos iniciais); CPF é opcional e aceito sem validação de dígitos verificadores; filtros `Todos` e `Ativos`.
 - **Evolução clínica:** Registro estruturado obrigatório após atendimento realizado.
 - **Rotas:** Integração com Google Maps e Waze a partir do endereço do paciente.
 - **LGPD:** O profissional atua como Controlador dos dados; o app exige consentimento na entrada e oferece ferramentas de privacidade em Configurações.
@@ -143,10 +143,10 @@ Use este helper para interagir com qualquer elemento na tela, seja do app ou do 
 
 ### 7. Validação de Campos Obrigatórios via AlertDialog
 
-A validação de campos obrigatórios (Nome, CPF, Telefone, Data de Nascimento, Endereço) no cadastro de paciente usa `AlertDialog` em vez de validadores inline do `TextFormField`, pois os erros inline do Flutter **não são expostos na árvore de acessibilidade do Android**.
+A validação de campos obrigatórios (Nome, Telefone, Data de Nascimento, Endereço) no cadastro de paciente usa `AlertDialog` em vez de validadores inline do `TextFormField`, pois os erros inline do Flutter **não são expostos na árvore de acessibilidade do Android**. CPF **não** é obrigatório e não passa por nenhuma validação de dígitos verificadores — aceita qualquer sequência de até 11 dígitos, inclusive vazia (pedido explícito do cliente: nem todo paciente tem CPF em mãos no primeiro atendimento). Duplicidade de CPF continua bloqueada, mas só quando o campo não está vazio — dois pacientes sem CPF não colidem entre si.
 
 **Comportamento:**
-- Ao clicar "Salvar Paciente" com campos vazios → `AlertDialog` com título "Campos obrigatórios" e lista dos itens faltando
+- Ao clicar "Salvar Paciente" com campos vazios → `AlertDialog` com título "Campos obrigatórios" e lista dos itens faltando (CPF nunca aparece nessa lista)
 - Cada item da lista aparece como texto acessível → `getByLabel('Nome Completo')` funciona
 - Botão "OK" fecha o dialog → `getByLabel('OK').tap()`
 - `barrierDismissible: false` — só fecha clicando no botão OK
@@ -163,13 +163,16 @@ class MockListaPacientesNotifier extends ListaPacientesNotifier {
 }
 ```
 
-**Testes unitários (6):**
-- CT-F1: 5 campos vazios → dialog com 5 itens
-- CT-F2: só Nome preenchido → dialog com 4 itens
-- CT-F3: só CPF preenchido → dialog com 4 itens
-- CT-F4: Nome+CPF+Telefone → dialog com 2 itens (Data, Endereço)
+**Testes unitários** (`test/widgets/telas/tela_cadastro_paciente_test.dart`):
+- CT-F1: todos os campos obrigatórios vazios → dialog com 4 itens (Nome, Telefone, Data, Endereço)
+- CT-F2: só Nome preenchido → dialog com 3 itens
+- CT-F3: CPF em branco não aparece nos campos obrigatórios e o cadastro segue normalmente
+- CT-F4: Nome+Telefone → dialog com 2 itens (Data, Endereço)
 - CT-F5: todos preenchidos → salva sem dialog
 - CT-F6: dialog fecha ao clicar OK
+- CPF sem dígito verificador válido (ex.: `11111111111`) é aceito, mas duplicado é bloqueado
+- CPF com sequência qualquer (sem checksum válido) é salvo como digitado
+- CPF em branco não gera falso positivo de duplicidade entre dois pacientes
 
 ### 8. `getByLabel` em AlertDialog
 
@@ -180,7 +183,7 @@ O Flutter expõe `AlertDialog.title`, `AlertDialog.content` Text widgets e `Text
 await expect(screen.getByLabel('Campos obrigatórios')).toBeVisible();
 // Verificar itens da lista
 await expect(screen.getByLabel('Nome Completo')).toBeVisible();
-await expect(screen.getByLabel('CPF')).toBeVisible();
+// CPF não é mais obrigatório — não aparece nesta lista.
 // Fechar o dialog
 await screen.getByLabel('OK').tap();
 // Confirmar que fechou

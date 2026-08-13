@@ -1,6 +1,6 @@
 # 📚 Documentação de Testes
 
-Guia completo dos 365 testes automatizados do Alta.
+Guia completo dos 368 testes automatizados do Alta.
 
 ---
 
@@ -8,7 +8,7 @@ Guia completo dos 365 testes automatizados do Alta.
 
 1. **[VISAO_GERAL.md](./VISAO_GERAL.md)** — Overview, estrutura, como rodar
 2. **[UNITARIOS.md](./UNITARIOS.md)** — 174 testes unitários (validadores, modelos, serviços)
-3. **[WIDGETS.md](./WIDGETS.md)** — 191 testes de widget (telas, componentes, utilitários)
+3. **[WIDGETS.md](./WIDGETS.md)** — 194 testes de widget (telas, componentes, utilitários)
 
 ---
 
@@ -39,7 +39,7 @@ flutter test test/unitarios/utilitarios/validadores_test.dart
 | Unit — Serviços | 50 | 14% |
 | Widget — Telas | 164 | 45% |
 | Widget — Componentes/Utilitários | 27 | 8% |
-| **TOTAL** | **365** | **100%** |
+| **TOTAL** | **368** | **100%** |
 
 ---
 

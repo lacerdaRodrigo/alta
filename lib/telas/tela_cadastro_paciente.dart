@@ -6,7 +6,6 @@ import '../componentes/design_system.dart';
 import '../modelos/paciente.dart';
 import '../provedores/provedores_dados.dart';
 import '../utilitarios/formatters.dart';
-import '../utilitarios/validador_cpf.dart';
 
 class TelaCadastroPaciente extends ConsumerStatefulWidget {
   const TelaCadastroPaciente({super.key});
@@ -122,7 +121,7 @@ class _TelaCadastroPacienteState extends ConsumerState<TelaCadastroPaciente> {
                         key: const Key('campo_cpf'),
                         controller: _cpfController,
                         decoration: const InputDecoration(
-                          labelText: 'CPF *',
+                          labelText: 'CPF',
                           prefixIcon: Icon(Icons.fingerprint_rounded),
                           hintText: '000.000.000-00',
                         ),
@@ -467,14 +466,6 @@ class _TelaCadastroPacienteState extends ConsumerState<TelaCadastroPaciente> {
 
     if (_nomeController.text.trim().isEmpty) faltando.add('Nome Completo');
 
-    final cpfTexto = _cpfController.text.trim();
-    if (cpfTexto.isEmpty) {
-      faltando.add('CPF');
-    } else {
-      final cpfLimpo = cpfTexto.replaceAll(RegExp(r'[^\d]'), '');
-      if (!ValidadorCpf.validar(cpfLimpo)) faltando.add('CPF inválido');
-    }
-
     final digitosTel = _telefoneController.text.trim().replaceAll(RegExp(r'[^\d]'), '');
     if (digitosTel.isEmpty) {
       faltando.add('Telefone');
@@ -598,9 +589,14 @@ class _TelaCadastroPacienteState extends ConsumerState<TelaCadastroPaciente> {
 
     final pacientes = ref.read(provedorListaPacientes);
     final cpfLimpo = _cpfController.text.trim().replaceAll(RegExp(r'[^\d]'), '');
-    final cpfJaCadastrado = pacientes.any(
-      (p) => p.cpf.replaceAll(RegExp(r'[^\d]'), '') == cpfLimpo,
-    );
+    // CPF não é mais obrigatório: com o campo em branco, `cpfLimpo` fica vazio
+    // e não pode contar como duplicata — senão o segundo paciente sem CPF
+    // já seria barrado pelo primeiro.
+    final cpfJaCadastrado =
+        cpfLimpo.isNotEmpty &&
+        pacientes.any(
+          (p) => p.cpf.replaceAll(RegExp(r'[^\d]'), '') == cpfLimpo,
+        );
 
     if (cpfJaCadastrado) {
       ScaffoldMessenger.of(context).showSnackBar(
