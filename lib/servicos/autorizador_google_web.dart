@@ -1,37 +1,37 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer' as developer;
 
 import 'package:google_identity_services_web/oauth2.dart' as oauth2;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:http/http.dart' as http;
 
 import 'autorizador_google_base.dart';
 
 /// Autorização no web falando direto com o Google Identity Services.
 ///
-/// **Por que não usar o `authorizationClient` do `google_sign_in`:** o plugin
-/// monta o token client amarrando o hint de usuário ao `prompt`
-/// (`google_sign_in_web/lib/src/gis_client.dart`):
+/// **Por que o login interativo não usa o botão de identidade do GIS
+/// (`GoogleSignIn`/`google_sign_in_web`):** esse botão só resolve
+/// identidade — para autorizar Drive/Sheets seria preciso um **segundo**
+/// popup, disparado depois que a identidade chega pelo stream
+/// `authenticationEvents`. Esse segundo popup não nasce de um clique nesta
+/// página (o clique original foi consumido pela interação inteira com o
+/// primeiro popup, que leva segundos): o Chrome tolera isso na maioria das
+/// vezes, mas o WebKit do iOS — usado por **todo** navegador no iOS, Chrome
+/// incluso, por exigência da Apple — bloqueia esse popup sempre. Foi isso que
+/// impedia o login de completar no iPhone.
 ///
-/// ```dart
-/// prompt: userHint == null ? '' : 'select_account',
-/// login_hint: userHint,
-/// ```
+/// A correção é não ter um segundo popup: [entrarInterativo] pede conta +
+/// consentimento dos escopos num popup só, chamado sem nenhum `await` antes
+/// — ainda dentro da mesma pilha síncrona do toque do usuário no botão do
+/// App — e depois busca nome/e-mail com o próprio access token
+/// (`https://www.googleapis.com/oauth2/v3/userinfo`), já que o escopo
+/// `email` está entre os pedidos.
 ///
-/// Os dois caminhos possíveis mostram o seletor de contas de novo quando o
-/// navegador tem mais de uma sessão Google aberta:
-/// - `GoogleSignIn.instance.authorizationClient` (sem hint) manda `prompt: ''`
-///   mas também `login_hint: null` — o Google não sabe qual conta usar e
-///   pergunta;
-/// - `conta.authorizationClient` manda o hint, e por isso o plugin força
-///   `prompt: 'select_account'` — que é literalmente "abra o seletor".
-///
-/// Como no web o login tem duas etapas obrigatórias (identidade pelo botão do
-/// GIS + autorização pelo token client), o usuário acabava escolhendo a conta
-/// duas vezes por login. Aqui montamos o par que o plugin não permite —
-/// `login_hint` com `prompt` vazio — então o segundo passo vai direto para a
-/// conta escolhida no botão e nem aparece quando o consentimento já existe.
-///
-/// No Android nada disso se aplica: ver `autorizador_google_stub.dart`.
+/// `garantirAutorizacao`/`headers`/`headersSeAutorizado` continuam existindo
+/// para **renovar** o token depois do login (ele expira em 1h no web) — aí
+/// sim usamos `login_hint` com `prompt` vazio, porque a conta já é conhecida
+/// e não há necessidade de abrir UI nenhuma.
 AutorizadorGoogle criarAutorizadorGoogle({required String clientIdWeb}) =>
     AutorizadorGoogleWeb(clientIdWeb);
 
@@ -92,6 +92,90 @@ class AutorizadorGoogleWeb implements AutorizadorGoogle {
     List<String> escopos,
   ) async {
     return _cabecalhos(await _token(conta.email, escopos));
+  }
+
+  @override
+  Future<ContaAutenticada> entrarInterativo(List<String> escopos) {
+    final resultado = Completer<ContaAutenticada>();
+
+    Future<ContaAutenticada> concluir(
+      String token,
+      int? expiresIn,
+      List<String> escoposConcedidos,
+    ) async {
+      final resposta = await http.get(
+        Uri.parse('https://www.googleapis.com/oauth2/v3/userinfo'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      if (resposta.statusCode != 200) {
+        throw StateError('Não foi possível obter os dados da conta Google.');
+      }
+      final identidade = jsonDecode(resposta.body) as Map<String, dynamic>;
+      final email = identidade['email'] as String;
+      final nome = identidade['name'] as String? ?? email;
+
+      _tokens[email] = _TokenEmCache(
+        token: token,
+        expiraEm: DateTime.now().add(
+          Duration(seconds: expiresIn ?? 3600) - _margemExpiracao,
+        ),
+        escopos: escoposConcedidos.toSet(),
+      );
+
+      return ContaAutenticada(
+        nomeUsuario: nome,
+        email: email,
+        obterHeaders: () => _token(email, escopos).then(_cabecalhos),
+      );
+    }
+
+    // Único popup do login: pede conta e consentimento dos escopos juntos.
+    // `requestAccessToken()` é chamado abaixo sem nenhum `await` antes —
+    // continua dentro da mesma pilha síncrona do toque do usuário, o que o
+    // navegador exige para não tratar o popup como bloqueado.
+    final cliente = oauth2.oauth2.initTokenClient(
+      oauth2.TokenClientConfig(
+        client_id: _clientId,
+        scope: escopos,
+        prompt: 'select_account',
+        include_granted_scopes: true,
+        callback: (resposta) {
+          final erro = resposta.error;
+          final token = resposta.access_token;
+          if (erro != null || token == null) {
+            resultado.completeError(
+              StateError(
+                'Não foi possível obter autorização do Google'
+                '${erro == null ? '' : ' ($erro)'}.',
+              ),
+            );
+            return;
+          }
+          unawaited(
+            concluir(
+              token,
+              resposta.expires_in,
+              resposta.scope,
+            ).then(resultado.complete, onError: resultado.completeError),
+          );
+        },
+        error_callback: (erro) {
+          developer.log(
+            'Login interativo do Google falhou: ${erro?.type} ${erro?.message}',
+            name: 'AutorizadorGoogleWeb',
+          );
+          resultado.completeError(
+            StateError(
+              'Não foi possível obter autorização do Google '
+              '(${erro?.message ?? erro?.type.name ?? 'erro desconhecido'}).',
+            ),
+          );
+        },
+      ),
+    );
+
+    cliente.requestAccessToken();
+    return resultado.future;
   }
 
   Map<String, String> _cabecalhos(String token) => {

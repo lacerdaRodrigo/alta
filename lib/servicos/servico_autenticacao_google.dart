@@ -49,9 +49,13 @@ abstract class ServicoAutenticacaoGoogle {
   Stream<ContaGoogleConectada> get contasConectadas;
   Stream<SessaoGoogle> get sessoesConectadas;
 
-  /// `false` no web: o Google Identity Services só aceita login iniciado pelo
-  /// widget que ele mesmo renderiza, então `entrar()` não pode ser chamado —
-  /// a `TelaLogin` mostra o botão do Google e o login chega pelos streams.
+  /// Se `entrar()` pode ser chamado diretamente pelo toque no botão do App.
+  ///
+  /// `true` em todas as plataformas suportadas hoje: no nativo via
+  /// `GoogleSignIn.authenticate()`, no web via um popup do OAuth2 do GIS
+  /// (`autorizador_google_web.dart`). Existe como sinal defensivo para uma
+  /// futura plataforma que exija outro fluxo — quando isso acontecer,
+  /// `TelaLogin` já sabe recuar sem travar o botão.
   bool get suportaLoginProgramatico;
 
   Future<void> inicializar();
@@ -80,8 +84,7 @@ class ServicoAutenticacaoGoogleReal implements ServicoAutenticacaoGoogle {
   Stream<SessaoGoogle> get sessoesConectadas => _sessoesController.stream;
 
   @override
-  bool get suportaLoginProgramatico =>
-      GoogleSignIn.instance.supportsAuthenticate();
+  bool get suportaLoginProgramatico => true;
 
   @override
   Future<void> inicializar() {
@@ -197,17 +200,28 @@ class ServicoAutenticacaoGoogleReal implements ServicoAutenticacaoGoogle {
   Future<SessaoGoogle> entrar() async {
     await inicializar();
 
-    if (!suportaLoginProgramatico) {
-      throw StateError(
-        'Nesta plataforma o login só pode ser iniciado pelo botão do Google.',
+    final conta = await _autorizador.entrarInterativo(escoposGoogleFisio);
+    final sessao = SessaoGoogle(
+      nomeUsuario: conta.nomeUsuario,
+      email: conta.email,
+      obterHeaders: conta.obterHeaders,
+    );
+
+    // No nativo, `GoogleSignIn.authenticate()` (chamado dentro de
+    // `entrarInterativo`) já dispara `authenticationEvents`, que
+    // `_tratarEvento` escuta e publica sozinho via `_publicarSessao` —
+    // publicar de novo aqui duplicaria a notificação. No web não existe
+    // esse evento automático: o login não passa mais pelo `GoogleSignIn`
+    // (ver `autorizador_google_web.dart`), então é aqui que a sessão
+    // precisa ser publicada.
+    if (kIsWeb) {
+      _contasController.add(
+        ContaGoogleConectada(nomeUsuario: conta.nomeUsuario, email: conta.email),
       );
+      _sessoesController.add(sessao);
     }
 
-    final conta = await GoogleSignIn.instance.authenticate(
-      scopeHint: escoposGoogleFisio,
-    );
-    await _garantirAutorizacao(conta);
-    return _criarSessao(conta);
+    return sessao;
   }
 
   @override

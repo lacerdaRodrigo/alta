@@ -4,7 +4,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../componentes/botao_google_renderizado.dart';
 import '../componentes/design_system.dart';
 import '../provedores/provedor_autenticacao.dart';
 import '../utilitarios/links_legais.dart';
@@ -333,18 +332,10 @@ class _TelaLoginState extends ConsumerState<TelaLogin> {
 
 /// Botão "Continuar com Google".
 ///
-/// No web o Google Identity Services só aceita login iniciado pelo widget que
-/// ele mesmo renderiza (`GoogleSignIn.authenticate()` lança `UnsupportedError`
-/// e `supportsAuthenticate()` devolve `false`). Para preservar o visual do app,
-/// o botão do Google fica invisível **sobre** o desenho, capturando o toque.
-///
-/// ⚠️ A sobreposição depende do widget do GIS ocupar a área do botão desenhado.
-/// Se uma atualização do SDK mudar o tamanho ou o DOM do botão, o toque para de
-/// cair no lugar certo — nesse caso, a saída suportada é exibir o botão do
-/// Google diretamente, sem o desenho por baixo.
-///
-/// Fora do web `construirBotaoGoogleRenderizado` devolve um `SizedBox.shrink()`
-/// e o toque é tratado pelo `GestureDetector` normalmente.
+/// Dispara `onTap` diretamente: no web, `entrarComGoogle` abre um único popup
+/// do OAuth2 do Google (identidade + consentimento dos escopos juntos) a
+/// partir deste mesmo toque — ver `autorizador_google_web.dart` para o porquê
+/// de não haver mais um botão do GIS sobreposto ao desenho.
 class _BotaoEntrarGoogle extends StatelessWidget {
   final bool carregando;
   final bool termosAceitos;
@@ -356,90 +347,61 @@ class _BotaoEntrarGoogle extends StatelessWidget {
     required this.onTap,
   });
 
-  /// O GIS renderiza o botão com no máximo 400px e o centraliza no espaço
-  /// disponível. Limitar o desenho à mesma largura mantém a área clicável e a
-  /// área visível iguais — sem isso, numa janela larga as extremidades do botão
-  /// desenhado ficam sobre o container vazio do GIS e não respondem ao clique.
   static const _larguraMaxima = 400.0;
 
   @override
   Widget build(BuildContext context) {
     final habilitado = !carregando && termosAceitos;
-    final largura = MediaQuery.of(context).size.width - 44;
-    final larguraBotao = largura < _larguraMaxima ? largura : _larguraMaxima;
 
     return ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: _larguraMaxima),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          GestureDetector(
-            key: const Key('btn_entrar_google'),
-            onTap: habilitado ? onTap : null,
-            child: Opacity(
-              opacity: termosAceitos ? 1 : 0.55,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 16,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+      child: GestureDetector(
+        key: const Key('btn_entrar_google'),
+        onTap: habilitado ? onTap : null,
+        child: Opacity(
+          opacity: termosAceitos ? 1 : 0.55,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 15),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (carregando)
-                      const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.4,
-                          color: FisioCores.primary,
-                        ),
-                      )
-                    else
-                      const _GoogleG(),
-                    const SizedBox(width: 11),
-                    const Text(
-                      'Continuar com Google',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: FisioCores.textPrimary,
-                      ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (carregando)
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      color: FisioCores.primary,
                     ),
-                  ],
+                  )
+                else
+                  const _GoogleG(),
+                const SizedBox(width: 11),
+                const Text(
+                  'Continuar com Google',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: FisioCores.textPrimary,
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
-          // O botão do Google só é construído quando o login está liberado.
-          // `IgnorePointer` NÃO serve aqui: ele só afeta o hit-test do Flutter, e
-          // a platform view é um elemento DOM que recebe o clique direto — com
-          // ele, dava para entrar sem aceitar os termos de uso.
-          if (habilitado)
-            Positioned.fill(
-              // NÃO usar opacity 0: `RenderOpacity.paint` retorna sem pintar o
-              // filho quando o alpha é zero (`proxy_box.dart`), e uma platform
-              // view só é anexada ao DOM quando pintada — o botão do Google
-              // simplesmente não existiria na página e o clique cairia no vazio.
-              // 0.01 vira alpha 3/255: imperceptível, mas pintado de verdade.
-              child: Opacity(
-                opacity: 0.01,
-                child: construirBotaoGoogleRenderizado(
-                  larguraMinima: larguraBotao,
-                ),
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }
