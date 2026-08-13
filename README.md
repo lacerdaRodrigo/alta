@@ -7,7 +7,7 @@
 [![Deploy de Produção](https://github.com/lacerdaRodrigo/alta/actions/workflows/deploy-prod.yml/badge.svg)](https://github.com/lacerdaRodrigo/alta/actions/workflows/deploy-prod.yml)
 [![Deploy de Testes](https://github.com/lacerdaRodrigo/alta/actions/workflows/deploy-preview.yml/badge.svg)](https://github.com/lacerdaRodrigo/alta/actions/workflows/deploy-preview.yml)
 [![Flutter](https://img.shields.io/badge/Flutter-3.44.1-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Testes](https://img.shields.io/badge/testes-365%20passando-success)](documentacao/testes/)
+[![Testes](https://img.shields.io/badge/testes-368%20passando-success)](documentacao/testes/)
 [![Licença](https://img.shields.io/badge/licen%C3%A7a-propriet%C3%A1ria-lightgrey)](LICENSE)
 
 [**Acessar o aplicativo**](https://app-fisio-care-2.web.app) · [Documentação](documentacao/) · [Modelo de dados](documentacao/MODELO_DADOS.md) · [Segurança e LGPD](documentacao/SEGURANCA_E_DADOS.md)
@@ -165,7 +165,7 @@ make dev-web              # http://localhost:5000
 
 ## Testes
 
-**365 testes automatizados** — 174 unitários + 191 de widget, cobrindo as 14
+**368 testes automatizados** — 174 unitários + 194 de widget, cobrindo as 14
 telas, os 3 modelos, os serviços de Drive/Sheets/repositório e os validadores.
 
 ```bash
@@ -234,7 +234,7 @@ infraestrutura do mantenedor.
 | [`documentacao/SEGURANCA_E_DADOS.md`](documentacao/SEGURANCA_E_DADOS.md) | LGPD, OAuth e o modelo BYODB |
 | [`documentacao/CI_CD.md`](documentacao/CI_CD.md) | Pipeline, secrets e troubleshooting |
 | [`documentacao/IMPLEMENTAR.md`](documentacao/IMPLEMENTAR.md) | Roadmap priorizado |
-| [`documentacao/testes/`](documentacao/testes/) | Os 365 testes, um a um |
+| [`documentacao/testes/`](documentacao/testes/) | Os 368 testes, um a um |
 | [`QA/qa.md`](QA/qa.md) | Roteiro de QA manual |
 | [`CHANGELOG.md`](CHANGELOG.md) | Histórico de versões |
 

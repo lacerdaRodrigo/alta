@@ -132,7 +132,7 @@ fisio-home-care/
 │   │       ├── gerador_id_test.dart         (8 testes — 100% cobertura)
 │   │       └── mensagens_erro_google_test.dart (8 testes — diagnóstico de login)
 │   │
-│   └── widgets/                     # 191 testes — UI + componentes
+│   └── widgets/                     # 194 testes — UI + componentes
 │       ├── componentes/
 │       │   ├── modal_detalhes_evolucao_test.dart   (6 testes)
     │   ├── modal_detalhes_paciente_test.dart   (12 testes)
@@ -143,7 +143,7 @@ fisio-home-care/
 │           ├── tela_splash_test.dart                 (7 testes — abertura animada + handoff para o login)
 │           ├── tela_login_test.dart                  (13 testes — navegação única + login não-programático)
 │           ├── tela_dashboard_test.dart              (19 testes)
-│           ├── tela_cadastro_paciente_test.dart      (23 testes)
+│           ├── tela_cadastro_paciente_test.dart      (26 testes)
 │           ├── tela_editar_paciente_test.dart        (6 testes — campos travados + atualização)
 │           ├── tela_editar_sessao_test.dart          (7 testes — editar/reagendar sessão)
 │           ├── tela_financeiro_test.dart             (8 testes — resumo financeiro mensal)
@@ -166,9 +166,9 @@ fisio-home-care/
 │   ├── chaves.md                    # (no .gitignore) — credenciais
 │   └── testes/
 │       ├── README.md                # Índice de testes
-│       ├── VISAO_GERAL.md           # Overview 365 testes
+│       ├── VISAO_GERAL.md           # Overview 368 testes
 │       ├── UNITARIOS.md             # Detalhe dos 174 unitários
-│       └── WIDGETS.md               # Detalhe dos 191 widgets
+│       └── WIDGETS.md               # Detalhe dos 194 widgets
 │
 ├── QA/
 │   └── qa.md                        # Script QA manual (NOT E2E automatizado)
@@ -309,7 +309,7 @@ Paciente.calcularIdade()   // ✓ delega para UtilitariosData
 
 ---
 
-## Testes (365 testes automatizados)
+## Testes (368 testes automatizados)
 
 ### Estrutura
 
@@ -321,7 +321,7 @@ test/
 │   ├── servicos/       — 50 testes (preferencias, Drive, Sheets, repositório)
 │   └── utilitarios/    — 94 testes (validadores, data, CPF, gerador_id, erros do Google)
 │
-└── widgets/    (191 testes)
+└── widgets/    (194 testes)
     ├── telas/        — 13 telas principais (UI, interação)
     ├── componentes/  — modal de detalhes do paciente + rodapé versão
     └── utilitarios/  — ações de agendamento
@@ -354,7 +354,7 @@ flutter test --coverage
 ✅ **Validação de entrada** — 55 testes (CPF, telefone, nome, data)  
 ✅ **Modelos** — 25 testes (serialização, cópia, status)  
 ✅ **Utilitários** — 31 testes (idade, formatação, geração de ID)  
-✅ **UI + Interação** — 191 testes (13 telas principais + componentes/utilitários)  
+✅ **UI + Interação** — 194 testes (13 telas principais + componentes/utilitários)  
 
 ❌ **Não coberto:**
 - Google Sheets API real (usaria quota, seria lento)
@@ -574,7 +574,7 @@ make release-prod  # mescla develop → main → dispara deploy de produção (p
 | `documentacao/ESPECIFICACOES_TELAS.md` | Requisitos funcionais das telas | ✅ |
 | `documentacao/SEGURANCA_E_DADOS.md` | LGPD, OAuth, modelo BYODB | ✅ |
 | `documentacao/IMPLEMENTAR.md` | Roadmap priorizado | ✅ |
-| `documentacao/testes/` | 365 testes automatizados | ✅ |
+| `documentacao/testes/` | 368 testes automatizados | ✅ |
 | `documentacao/CI_CD.md` | Pipeline GitHub Actions: fluxo, secrets, uso e troubleshooting | ✅ |
 | `QA/qa.md` | Script QA manual (não é E2E) | ✅ |
 
